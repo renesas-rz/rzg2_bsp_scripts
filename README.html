@@ -1,0 +1,42 @@
+<h1>RZ/G2 BSP Scripts</h1>
+
+<p>This repository contains helpful scripts to be used with the official Renesas BSP</p>
+
+<h2>Supported BSP versions</h2>
+
+<ul>
+<li>VLP64 v1.0.8</li>
+</ul>
+
+<h2>Install</h2>
+
+<p>To install, please place this repository as a directory named 'scripts' under the yocto BSP directory.<br>
+For example, we will us the VLP64 v1.0.8 BSP (rzg2_bsp_eva_v108.tar.gz) that can be downloaded from renesas.com</p>
+
+<pre style="background-color: #F0F0FF">
+$ mkdir rzg2_bsp_eva_v108
+$ tar xf rzg2_bsp_eva_v108.tar.gz -C rzg2_bsp_eva_v108
+$ cd rzg2_bsp_eva_v108
+$ git clone https://github.com/renesas-rz/rzg2_bsp_scripts  scripts
+</pre>
+
+<h2>Setup and Configure the Yocto BSP</h2>
+
+<p>Below is an example of how to configure your yocto BSP before building the first time.<br>
+Please note that this is intended to only be done once. If you need to change the configuration
+after building, please edit the local.conf file directly.</p>
+
+<pre style="background-color: #F0F0FF">
+$ scripts/yocto_setup/setup.sh
+</pre>
+
+<p>In the GUI menu, choose your board and then select "Save" to start the setup and configuration.</p>
+
+<p>After complete, you can build your Yocto BSP.<br></p>
+
+<pre style="background-color: #F0F0FF">
+$ source poky/oe-init-build-env
+$ bitbake core-image-qt
+</pre>
+
+<p>Please refer to the BSP 'Release Note' for more details on building and advanced configurations.</p>
