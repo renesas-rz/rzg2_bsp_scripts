@@ -12,7 +12,7 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install tzdata and set up time zone
 ENV TZ=$TZ_VALUE
-RUN apt update && apt install -y apt-utils
+RUN apt update && apt install -y apt-utils sudo
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime \
@@ -21,7 +21,6 @@ RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime \
 
 # Install packages necessary for building Yocto/OpenEmbedded based images
 RUN \
-	apt update && \
 	apt install -y \
 		gawk \
 		wget \
@@ -46,27 +45,21 @@ RUN \
 		libegl1-mesa \
 		libsdl1.2-dev \
 		pylint3 \
-		xterm \
-	&& rm -rf /var/lib/apt/lists/*
+		xterm
 
 # Install packages necessary for building U-boot
 RUN \
-	apt update && \
 	apt install -y \
 		lzop \
-		srecord \
-	&& rm -rf /var/lib/apt/lists/*
+		srecord
 
 # Install packages necessary for building TFA
 RUN \
-	apt update && \
 	apt install -y \
-		plantuml \
-	&& rm -rf /var/lib/apt/lists/*
+		plantuml
 
 # Install additional useful packages
 RUN \
-	apt update && \
 	apt install -y \
 		curl \
 		nano \
@@ -76,11 +69,11 @@ RUN \
 		tree \
 		vim \
 		zip \
-	&& rm -rf /var/lib/apt/lists/*
+		p7zip-full \
+		whiptail
 
 # Setup locales
 RUN \
-	apt update && \
 	apt install -y locales && \
 	rm -rf /var/lib/apt/lists/*
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
