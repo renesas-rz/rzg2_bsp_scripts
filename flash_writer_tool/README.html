@@ -1,0 +1,70 @@
+<HTML>
+<HEAD>
+  <TITLE>README.html</TITLE>
+</HEAD>
+<BODY style="font-family: Arial">
+
+<h2>Program Bootloaders using internal ROM and Flashwriter</h2><hr>
+
+<h3>Description</h3>
+
+<p>The RZ/G2 has a built-in ROM for downloading a binary to internal RAM and then executing it.</p>
+
+<p>That downloaded binary is call "Flash Writer" and is supplied with the VLP64 BSP.</p>
+
+<p>This script helps automate the process of programming a SPI flash or eMMC by download image over a serial port to the board.</p>
+
+<p>If using a Renesas evaluation board, you can use the 'sw' command to print out how you need to modify the on-board switches to get into the correct modes.</p>
+
+<p>There are 2 methods to using this script: Command line or GUI menu</p>
+
+<h3>Using the GUI Menu Interface</h3>
+
+<p>When you run the flash_writer.sh script without any arguments, it will operate in a GUI menu mode. In this interface, you can select the files you wish to program. You can also start the programming operations.</p>
+
+<p>Please select your <strong>Board</strong> and <strong>Target Flash</strong>  and <strong>Interface</strong> first, then choose the location (<strong>FILES_DIR</strong>) that contains your binary files to program.</p>
+
+<p>Your board configuration setting can be saved in a .ini file. You can using multiple different .ini files. By default, "config.ini" is chosen.</p>
+
+<p>GUI settings will be saved in the file "settings.txt",</p>
+
+<h3>Using the Command Line Interface</h3>
+
+<p>If you wish to use only the command line, you can see the list of commands by using the following command:</p>
+
+<pre style="background-color: #F6F8FA"><pre style="background-color: #F6F8FA">$ ./flash_writer.sh  h
+</pre></pre>
+
+<p>When using the command line interface, you may either pass all board settings and file names on the command line, or store them in a .ini file and pass the filename on the command line.</p>
+
+<p>When using the command line interface, it is recommended to first make a copy of the example configuration (example_config.ini) and then edit it in a text editor.</p>
+
+<pre style="background-color: #F6F8FA"><pre style="background-color: #F6F8FA">$ cp example_config.ini config.ini
+$ gedit config.ini
+$ ./flash_writer.sh config.ini sw
+</pre></pre>
+
+<h3>Instructions</h3>
+
+<ol>
+<li><p>Use either the GUI menu or a .ini config file to selection your board and files.</p></li>
+<li><p>Power <strong>off</strong> the board</p></li>
+<li><p>Determine the <strong>switch settings</strong> for your board. You can find that information in the GUI menu interface, or by using the "sw" command on the command line. Put the device into <strong>SCIF download mode</strong>.</p></li>
+<li><p>Power <strong>on</strong> the board</p></li>
+<li><p>Open a 2nd terminal window and type "cat /dev/ttyUSB0" in order to monitor the output from the board. If you press the RESET button the board, you should see a text message "SCIF Download mode .......  please send !"</p></li>
+<li><p><strong>Download the flash writer binary</strong>. This must be done first after RESET.</p></li>
+<li><p>Perform the individual commands to download and program the binaries to the board.</p></li>
+</ol>
+
+<h2>Notes on USB Download mode</h2><hr>
+
+<p>USB Download mode is supported for RZ/G2E, RZ/G2N and RZ/G2H devices.
+In this mode, the RZ/G USB Function port is used as a USB CDC class USB-serial device when plugged into a host machine.
+The HiHope boards were designed to support this.
+In Windows, this works fine. However with a Linux PC, there are issues.</p>
+
+<p>Please refer to file <a href="USB_Download_Mode.md">USB<em>Download</em>Mode.md</a></p>
+
+</BODY>
+</HTML>
+

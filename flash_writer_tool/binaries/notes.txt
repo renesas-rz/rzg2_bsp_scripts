@@ -1,0 +1,54 @@
+# rzg2_flash_writer version
+#    tag: v1.0.4
+#   hash: 757e29806159
+
+# Below was how these rzg2_flash_writer binaries were created.
+#
+# When the binaiers are created, they only enalbe the features that were needed.
+# The reason was to keep the .mot size as small as possible to reduce how long it
+# takes to download to the board.
+# Also, since the RZ/G2E has a small internal RAM, you cannot enable many features
+# at once becaue then it will not fit in the internal RAM.
+
+
+# Start in the rzg2_flash_writer directory
+# We will put all the files in a direcotry "z_binaries" and then copy them here.
+
+mkdir -p z_binaries
+rm z_binaries/*
+
+# SDK Toolchain setup
+source /opt/poky/2.4.3/environment-setup-aarch64-poky-linux
+
+make clean
+make BOARD=HIHOPE  BOOT=WRITER_WITH_CERT USB=DISABLE SERIAL_FLASH=ENABLE EMMC=DISABLE
+cp AArch64_output/AArch64_Flash_writer_SCIF_DUMMY_CERT_E6300400_hihope.mot z_binaries/Flash_writer_hihope_SCIF_SPI.mot
+
+make clean
+make BOARD=HIHOPE  BOOT=WRITER_WITH_CERT USB=DISABLE SERIAL_FLASH=DISABLE EMMC=ENABLE
+cp AArch64_output/AArch64_Flash_writer_SCIF_DUMMY_CERT_E6300400_hihope.mot z_binaries/Flash_writer_hihope_SCIF_eMMC.mot
+
+make clean
+make BOARD=HIHOPE  BOOT=WRITER_WITH_CERT USB=ENABLE SERIAL_FLASH=ENABLE EMMC=DISABLE
+cp AArch64_output/AArch64_Flash_writer_SCIF_DUMMY_CERT_E6300400_hihope.mot z_binaries/Flash_writer_hihope_USB_SPI.mot
+
+make clean
+make BOARD=HIHOPE  BOOT=WRITER_WITH_CERT USB=ENABLE SERIAL_FLASH=DISABLE EMMC=ENABLE
+cp AArch64_output/AArch64_Flash_writer_SCIF_DUMMY_CERT_E6300400_hihope.mot z_binaries/Flash_writer_hihope_USB_eMMC.mot
+
+make clean
+make BOARD=EK874  BOOT=WRITER_WITH_CERT USB=DISABLE SERIAL_FLASH=ENABLE EMMC=DISABLE
+cp AArch64_output/AArch64_Flash_writer_SCIF_DUMMY_CERT_E6300400_ek874.mot z_binaries/Flash_writer_ek874_SCIF_SPI.mot
+
+make clean
+make BOARD=EK874  BOOT=WRITER_WITH_CERT USB=DISABLE SERIAL_FLASH=DISABLE EMMC=ENABLE
+cp AArch64_output/AArch64_Flash_writer_SCIF_DUMMY_CERT_E6300400_ek874.mot z_binaries/Flash_writer_ek874_SCIF_eMMC.mot
+
+make clean
+make BOARD=EK874  BOOT=WRITER_WITH_CERT USB=ENABLE SERIAL_FLASH=ENABLE EMMC=DISABLE
+cp AArch64_output/AArch64_Flash_writer_SCIF_DUMMY_CERT_E6300400_ek874.mot z_binaries/Flash_writer_ek874_USB_SPI.mot
+
+make clean
+make BOARD=EK874  BOOT=WRITER_WITH_CERT USB=ENABLE SERIAL_FLASH=DISABLE EMMC=ENABLE
+cp AArch64_output/AArch64_Flash_writer_SCIF_DUMMY_CERT_E6300400_ek874.mot z_binaries/Flash_writer_ek874_USB_eMMC.mot
+
