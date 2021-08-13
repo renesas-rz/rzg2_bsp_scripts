@@ -1,8 +1,15 @@
 #!/bin/bash
 
+# Most of this script is made of functions.
+# You can search for "Script Start GUI" to find the start of execution for GUI menu
+# You can search for "Script Start OPP" to find the start of execution of programming operations
+
 if [ "$1" == "" ] ; then
   export FW_GUI_MODE=1
 fi
+
+# Global Settings
+FIP=0 # TF-A uses FIP instead of BL31
 
 # Set BOARD_NAME and SW_SETTINGS
 switch_settings() {
@@ -70,6 +77,28 @@ Switch settings for SW1002.
 	8 = OFF                     8 = ON
 "
   fi
+
+  if [ "$BOARD" == "smarc-rzg2l" ] ; then
+	BOARD_NAME="RZ/G2L SMARC Board by Renesas"
+	SW_SETTINGS="
+
+Use switches SW11 on Carrier board to set the boot mode.
+
+SCIF Download Mode                     SPI Boot Mode
+--------------------------------------------------------------
+ SW11-1 = OFF                     SW11-1 = OFF
+ SW11-2 = ON                      SW11-2 = OFF
+ SW11-3 = OFF                     SW11-3 = OFF
+ SW11-4 = ON                      SW11-4 = ON
+
+      +---------+                 +---------+
+      | ON      |                 | ON      |
+ SW11 |   =   = |            SW11 |       = |
+      | =   =   |                 | = = =   |
+      | 1 2 3 4 |                 | 1 2 3 4 |
+      +---------+                 +---------+
+"
+  fi
 }
 
 clear_filenames() {
@@ -78,6 +107,7 @@ clear_filenames() {
   unset BL2_FILE
   unset SA6_FILE
   unset BL31_FILE
+  unset FIP_FILE
   unset UBOOT_FILE
 }
 
@@ -93,6 +123,7 @@ config_hash() {
   "$BL2_FILE" \
   "$SA6_FILE" \
   "$BL31_FILE" \
+  "$FIP_FILE" \
   "$UBOOT_FILE" \
   | md5sum)
 }
@@ -156,36 +187,27 @@ set_filenames() {
 	fi
   fi
 
-  # For any file that does not exist, look to see if they are
-  # in sub-directories because they were build outside of Yocto
+  if [ "$BOARD" == "smarc-rzg2l" ] ; then
 
-  # Flash Writer
-  if [ ! -e "$FLASHWRITER" ] ; then
-    FLASHWRITER_TMP=`find ../../rzg2_flash_writer/AArch64_output/*.mot`
-    if [ -e "$FLASHWRITER_TMP" ] ; then FLASHWRITER=$FLASHWRITER_TMP ; fi
-  fi
+	if [ "$FILES_DIR" == "" ] ; then
+		FILES_DIR="."
+	fi
+	if [ "$FLASHWRITER" == "" ] ; then
+		# As for BSP 1.1, RZ/G2L did not build flash writer as part of the Yocto build
+		FLASHWRITER="./binaries/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
+	fi
+	if [ "$BL2_FILE" == "" ] ; then
+		BL2_FILE=$FILES_DIR/bl2_bp-${BOARD}.srec
+	fi
+	if [ "$FIP_FILE" == "" ] ; then
+		FIP_FILE=$FILES_DIR/fip-${BOARD}.srec
+	fi
 
-  # arm-trusted-firmware
-  if [ "$FLASH" == "0" ] ; then
-    DEPLOY_DIR=z_deploy_spi
-  else
-    DEPLOY_DIR=z_deploy_emmc
-  fi
-  if [ ! -e "$SA0_FILE" ] ; then
-    # If we find the sa0 file, then we know the other files should be there too
-    SA0_FILE_TMP=$FILES_DIR/arm-trusted-firmware/$DEPLOY_DIR/bootparam_sa0.srec
-    if [ -e "$SA0_FILE_TMP" ] ; then
-      SA0_FILE=$FILES_DIR/arm-trusted-firmware/$DEPLOY_DIR/bootparam_sa0.srec
-      BL2_FILE=$FILES_DIR/arm-trusted-firmware/$DEPLOY_DIR/bl2-${BOARD}.bin
-      SA6_FILE=$FILES_DIR/arm-trusted-firmware/$DEPLOY_DIR/cert_header_sa6.srec
-      BL31_FILE=$FILES_DIR/arm-trusted-firmware/$DEPLOY_DIR/bl31-${BOARD}.bin
-   fi
-  fi
-
-  # u-boot
-  if [ ! -e "$UBOOT_FILE" ] ; then
-    UBOOT_FILE_TMP=$FILES_DIR/renesas-u-boot-cip/.out_${BOARD}/u-boot.bin
-    if [ -e "$UBOOT_FILE_TMP" ] ; then UBOOT_FILE=$UBOOT_FILE_TMP ; fi
+	# Clear file settings we do not use
+	SA0_FILE=""
+	SA6_FILE=""
+	BL31_FILE=""
+	UBOOT_FILE=""
   fi
 }
 
@@ -208,7 +230,12 @@ set_fw_binary() {
       S_NAME="SCIF"
     fi
 
-  FLASHWRITER="./binaries/Flash_writer_${B_NAME}_${S_NAME}_${F_NAME}.mot"
+    FLASHWRITER="./binaries/Flash_writer_${B_NAME}_${S_NAME}_${F_NAME}.mot"
+
+    # As for BSP 1.1, RZ/G2L only support SCIF download mode and booting from SPI Flash
+    if [ "$BOARD" == "smarc-rzg2l" ] ; then
+      FLASHWRITER="./binaries/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
+    fi
   fi
 }
 
@@ -278,18 +305,28 @@ do_menu_board() {
 	"2 hihope-rzg2m" "  HiHope RZ/G2M by Hoperun Technology" \
 	"3 hihope-rzg2n" "  HiHope RZ/G2N by Hoperun Technology" \
 	"4 hihope-rzg2h" "  HiHope RZ/G2H by Hoperun Technology" \
-	"5 CUSTOM"       "  (manually edit ini file)" \
+	"5 smarc-rzg2l " "  SMARC RZ/G2L by Renesas Electronics" \
+	"6 CUSTOM"       "  (manually edit ini file)" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
+    FIP=0
     case "$SELECT" in
-      1\ *) BOARD=ek874 ; switch_settings ; clear_filenames ; set_filenames ; set_fw_binary ;;
-      2\ *) BOARD=hihope-rzg2m ; switch_settings ; clear_filenames ; set_filenames ; set_fw_binary ;;
-      3\ *) BOARD=hihope-rzg2n ; switch_settings ; clear_filenames ; set_filenames ; set_fw_binary ;;
-      4\ *) BOARD=hihope-rzg2h ; switch_settings ; clear_filenames ; set_filenames ; set_fw_binary ;;
-      5\ *) BOARD=CUSTOM ; switch_settings ; clear_filenames ; FLASHWRITER="(please define)" ;;
+      1\ *) BOARD=ek874 ;;
+      2\ *) BOARD=hihope-rzg2m ;;
+      3\ *) BOARD=hihope-rzg2n ;;
+      4\ *) BOARD=hihope-rzg2h ;;
+      5\ *) BOARD=smarc-rzg2l ; FIP=1 ;;
+      5\ *) BOARD=CUSTOM ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
+
+    unset FILES_DIR
+    switch_settings
+    clear_filenames
+    set_filenames
+    set_fw_binary
+
   fi
 }
 
@@ -533,6 +570,16 @@ do_menu_file_bl31() {
   fi
 }
 
+do_menu_file_fip() {
+  SELECT=$(whiptail --title "FIP File Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter file path to FIP File." 0 100 \
+	"fip-${BOARD}.srec"  \
+	3>&1 1>&2 2>&3)
+  RET=$?
+  if [ $RET -eq 0 ] ; then
+   FIP_FILE="$SELECT"
+  fi
+}
+
 do_menu_file_uboot() {
   SELECT=$(whiptail --title "u-boot File Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter file path to u-boot File." 0 100 \
 	"u-boot-elf-${BOARD}.srec"  \
@@ -568,6 +615,9 @@ do_cmd() {
 	BOARD=$BOARD FLASH=$FLASH SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE FW_GUI_MODE=2 ./flash_writer_tool.sh $CMD $FILE_TO_SEND
 }
 
+#################################################################
+# Script Start GUI
+#################################################################
 if [ "$FW_GUI_MODE" == "1" ] ; then
 
   # Set Default Whiptail color (blue looks better than purple)
@@ -608,6 +658,11 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       DETECTED=1
     elif [ -e ../../build/tmp/deploy/images/ek874 ] ; then
       BOARD="ek874"
+      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
+      DETECTED=1
+    elif [ -e ../../build/tmp/deploy/images/smarc-rzg2l ] ; then
+      BOARD="smarc-rzg2l"
+      FIP=1
       FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
     else
@@ -656,6 +711,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
     BL2_FILE_TEXT=$(echo $BL2_FILE | sed "s:$FILES_DIR:\$(FILES_DIR):")
     SA6_FILE_TEXT=$(echo $SA6_FILE | sed "s:$FILES_DIR:\$(FILES_DIR):")
     BL31_FILE_TEXT=$(echo $BL31_FILE | sed "s:$FILES_DIR:\$(FILES_DIR):")
+    FIP_FILE_TEXT=$(echo $FIP_FILE | sed "s:$FILES_DIR:\$(FILES_DIR):")
     UBOOT_FILE_TEXT=$(echo $UBOOT_FILE | sed "s:$FILES_DIR:\$(FILES_DIR):")
 
     # check if files exits
@@ -665,10 +721,41 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
     if [ -e "$BL2_FILE" ] ; then BL2_EXIST="✓" ; else BL2_EXIST="x" ; fi
     if [ -e "$SA6_FILE" ] ; then SA6_EXIST="✓" ; else SA6_EXIST="x" ; fi
     if [ -e "$BL31_FILE" ] ; then BL31_EXIST="✓" ; else BL31_EXIST="x" ; fi
+    if [ -e "$FIP_FILE" ] ; then FIP_EXIST="✓" ; else FIP_EXIST="x" ; fi
     if [ -e "$UBOOT_FILE" ] ; then UBOOT_EXIST="✓" ; else UBOOT_EXIST="x" ; fi
 
+    # Remove entries based on FIP
+    if [ "$FIP" == "0" ] ; then
+      FIP_EXIST=" " ; FIP_FILE_TEXT=""
+    else
+      SA0_EXIST=" " ; SA0_FILE_TEXT=""
+      SA6_EXIST=" " ; SA6_FILE_TEXT=""
+      BL31_EXIST=" " ; BL31_FILE_TEXT=""
+      UBOOT_EXIST=" " ; UBOOT_FILE_TEXT=""
+    fi
+
     # Remind users to run flash writer first (FWR =Flash Writer Reminder)
-    if [ "$FW_NOT_DL_YET" == "1" ] ; then  FWR="★" ; else FWR=" " ; fi
+    # Show what operations the user can choose
+    OP1=" " # SA0, SA6, BL31, u-boot, ALL
+    OP2=" " # BL2, ATF
+    OP3=" " # FIP
+    OP4=" " # eMMC
+
+    if [ "$FW_NOT_DL_YET" == "1" ] ; then
+      FWR="★"
+    else
+      FWR=" "
+      if [ "$FLASH" == "1" ] ; then
+        OP4="★"
+      fi
+      if [ "$FIP" == "0" ] ; then
+        OP1="★"
+        OP2="★"
+      else
+        OP2="★"
+        OP3="★"
+      fi
+    fi
 
     # Files directory does not exist, remind user to set(FDR = FILES DIR Reminder)
     if [ ! -e "$FILES_DIR" ] ; then  FDR="★" ; else FDR=" " ; fi
@@ -689,29 +776,31 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
     SELECT=$(whiptail --title "RZ/G2 Flash Writer Tool" --menu \
 	"Select your programming options.\nYou may use [ESC]+[ESC] to Cancel/Exit (no save). Use [Tab] key to select buttons.\n\nUse the <Change> button (or enter) to make changes.\n$CHANGE_TEXT" 0 0 0 --cancel-button $OK_TEXT --ok-button Change \
 	--default-item "$LAST_SELECT" \
-	"1.             Board:" "  $BOARD_NAME"  \
-	"2.      Target Flash:" "  ${FLASH_TEXT[$FLASH]}" \
-	"3.         Interface:" "  $SERIAL_DEVICE_INTERFACE  ($DL_TYPE)"  \
-	"4.       Config File:" "  $CONFIG_FILE"  \
-	"5.    Extra Settings:" "  GUI Colors, windows size, etc..."  \
+	"               Board:" "  $BOARD_NAME"  \
+	"        Target Flash:" "  ${FLASH_TEXT[$FLASH]}" \
+	"           Interface:" "  $SERIAL_DEVICE_INTERFACE  ($DL_TYPE)"  \
+	"         Config File:" "  $CONFIG_FILE"  \
+	"      Extra Settings:" "  GUI Colors, windows size, etc..."  \
 	"_______Files_________" "" \
-	"10. $FDR      FILES_DIR:" "$FD_EXIST $FILES_DIR" \
-	"11.      FLASHWRITER:" "$FW_EXIST $FLASHWRITER_TEXT" \
-	"12.         SA0_FILE:" "$SA0_EXIST $SA0_FILE_TEXT" \
-	"13.         BL2_FILE:" "$BL2_EXIST $BL2_FILE_TEXT" \
-	"14.         SA6_FILE:" "$SA6_EXIST $SA6_FILE_TEXT" \
-	"15.        BL31_FILE:" "$BL31_EXIST $BL31_FILE_TEXT" \
-	"16.       UBOOT_FILE:" "$UBOOT_EXIST $UBOOT_FILE_TEXT" \
+	"    $FDR      FILES_DIR:" "$FD_EXIST $FILES_DIR" \
+	"         FLASHWRITER:" "$FW_EXIST $FLASHWRITER_TEXT" \
+	"            SA0_FILE:" "$SA0_EXIST $SA0_FILE_TEXT" \
+	"            BL2_FILE:" "$BL2_EXIST $BL2_FILE_TEXT" \
+	"            SA6_FILE:" "$SA6_EXIST $SA6_FILE_TEXT" \
+	"           BL31_FILE:" "$BL31_EXIST $BL31_FILE_TEXT" \
+	"           FIP_FILE:" "$FIP_EXIST $FIP_FILE_TEXT" \
+	"          UBOOT_FILE:" "$UBOOT_EXIST $UBOOT_FILE_TEXT" \
 	"______Operations_____" "" \
 	"a. $FWR Download F.W.   " "  Downloads the Flash Writer binary (must be run first)" \
-	"b.   Program SA0     " "  SA0 (Boot Parameters)" \
-	"c.   Program BL2     " "  BL2 (Trusted Boot Firmware)" \
-	"d.   Program SA6     " "  SA6 (Cert Header)" \
-	"e.   Program BL31    " "  BL31 (EL3 Runtime Software)" \
-	"f.   Program u-boot  " "  u-boot (BL33, Non-trusted Firmware)" \
-	"g.   Program ATF     " "  Program all arm-trusted-firmware files (SA0,BL2,SA6,BL31)" \
-	"h.   Program All     " "  Programs all files (SA0,BL2,SA66,BL31 and u-boot)" \
-	"i.   eMMC boot setup " "  Configure an eMMC device for booting (only needed once)" \
+	"b. $OP1 Program SA0     " "  SA0 (Boot Parameters)" \
+	"c. $OP2 Program BL2     " "  BL2 (Trusted Boot Firmware)" \
+	"d. $OP1 Program SA6     " "  SA6 (Cert Header)" \
+	"e. $OP1 Program BL31    " "  BL31 (EL3 Runtime Software)" \
+	"f. $OP3 Program FIP     " "  FIP (Firemare Image Package)" \
+	"g. $OP1 Program u-boot  " "  u-boot (BL33, Non-trusted Firmware)" \
+	"h. $OP2 Program ATF     " "  Program all arm-trusted-firmware files (SA0,BL2,SA6,BL31,FIP)" \
+	"i. $OP1 Program All     " "  Programs all files (SA0,BL2,SA66,BL31 and u-boot)" \
+	"j. $OP4 eMMC boot setup " "  Configure an eMMC device for booting (only needed once)" \
 	"s. $FWR Show switches   " "  Show the switch settings for Renesas boards (in case you forgot)" \
 	3>&1 1>&2 2>&3)
     RET=$?
@@ -727,10 +816,12 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
         echo "FILES_DIR=$FILES_DIR" >> $CONFIG_FILE
         echo "FW_PREBUILT=$FW_PREBUILT" >> $CONFIG_FILE
         echo "FLASHWRITER=$FLASHWRITER" >> $CONFIG_FILE
+        echo "FIP=$FIP" >> $CONFIG_FILE
         echo "SA0_FILE=$SA0_FILE" >> $CONFIG_FILE
         echo "BL2_FILE=$BL2_FILE" >> $CONFIG_FILE
         echo "SA6_FILE=$SA6_FILE" >> $CONFIG_FILE
         echo "BL31_FILE=$BL31_FILE" >> $CONFIG_FILE
+        echo "FIP_FILE=$FIP_FILE" >> $CONFIG_FILE
         echo "UBOOT_FILE=$UBOOT_FILE" >> $CONFIG_FILE
       fi
 
@@ -745,40 +836,53 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
     elif [ $RET -eq 0 ] ; then
       LAST_SELECT="$SELECT"
       case "$SELECT" in
-        1.\ *) do_menu_board ;;
-        2.\ *) do_menu_target_flash ;;
-        3.\ *) do_menu_dev ;;
-        4.\ *) do_menu_config ;;
-        5.\ *) do_menu_extra ;;
-        10.\ *) do_menu_file_dir ;;
-        11.\ *) do_menu_file_fw ;;
-        12.\ *) do_menu_file_sa0 ;;
-        13.\ *) do_menu_file_bl2 ;;
-        14.\ *) do_menu_file_sa6 ;;
-        15.\ *) do_menu_file_bl31 ;;
-        16.\ *) do_menu_file_uboot ;;
-        a.\ *) whiptail --title "Download mode" --msgbox "Make sure the board is configured for \"SCIF Download mode\" or \"USB Download mode\"\n\nPower on the board and press the RESET button.\n\nThen, press ENTER on the keyboard to continue." 0 0 ;
+        *Board:*) do_menu_board ;;
+        *Target\ Flash:*) do_menu_target_flash ;;
+        *Interface:*) do_menu_dev ;;
+        *Config\ File:*) do_menu_config ;;
+        *Extra\ Settings:*) do_menu_extra ;;
+
+        *Files*) ;;
+
+        *FILES_DIR:*) do_menu_file_dir ;;
+        *FLASHWRITER:*) do_menu_file_fw ;;
+        *SA0_FILE:*) if [ "$FIP" == "1" ] ; then continue ; fi ; do_menu_file_sa0 ;;
+        *BL2_FILE:*) do_menu_file_bl2 ;;
+        *SA6_FILE:*) if [ "$FIP" == "1" ] ; then continue ; fi ; do_menu_file_sa6 ;;
+        *BL31_FILE:*) if [ "$FIP" == "1" ] ; then continue ; fi ; do_menu_file_bl31 ;;
+        *FIP_FILE:*) if [ "$FIP" == "0" ] ; then continue ; fi ; do_menu_file_fip ;;
+        *UBOOT_FILE:*) if [ "$FIP" == "1" ] ; then continue ; fi ; do_menu_file_uboot ;;
+
+        *Operations*) ;;
+
+        *Download\ F.W.*) whiptail --title "Download mode" --msgbox "Make sure the board is configured for \"SCIF Download mode\" or \"USB Download mode\"\n\nPower on the board and press the RESET button.\n\nThen, press ENTER on the keyboard to continue." 0 0 ;
 		CMD=fw FILE_TO_SEND=$FLASHWRITER ; do_cmd ; export FW_NOT_DL_YET=0 ;;
-        b.\ *) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=sa0 ; FILE_TO_SEND=$SA0_FILE ; do_cmd ; fi ;;
-        c.\ *) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=bl2 ; FILE_TO_SEND=$BL2_FILE ; do_cmd ; fi ;;
-        d.\ *) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=sa6 ; FILE_TO_SEND=$SA6_FILE ; do_cmd ; fi ;;
-        e.\ *) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=bl31 ; FILE_TO_SEND=$BL31_FILE ; do_cmd ; fi ;;
-        f.\ *) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=uboot ; FILE_TO_SEND=$UBOOT_FILE ; do_cmd ; fi ;;
-        g.\ *) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then
-		CMD=sa0 ; FILE_TO_SEND=$SA0_FILE ; do_cmd ; sleep 1 ;
-		CMD=bl2 ; FILE_TO_SEND=$BL2_FILE ; do_cmd ; sleep 2 ;
-		CMD=sa6 ; FILE_TO_SEND=$SA6_FILE ; do_cmd ;  sleep 1 ;
-		CMD=bl31 ; FILE_TO_SEND=$BL31_FILE ; do_cmd ;  sleep 2 ;
+        *Program\ SA0*) if [ "$FIP" == "1" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=sa0 ; FILE_TO_SEND=$SA0_FILE ; do_cmd ; fi ;;
+        *Program\ BL2*) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=bl2 ; FILE_TO_SEND=$BL2_FILE ; do_cmd ; fi ;;
+        *Program\ SA6*) if [ "$FIP" == "1" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=sa6 ; FILE_TO_SEND=$SA6_FILE ; do_cmd ; fi ;;
+        *Program\ BL31*) if [ "$FIP" == "1" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=bl31 ; FILE_TO_SEND=$BL31_FILE ; do_cmd ; fi ;;
+        *Program\ FIP*) if [ "$FIP" == "0" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=fip ; FILE_TO_SEND=$FIP_FILE ; do_cmd ; fi ;;
+        *Program\ u-boot*) if [ "$FIP" == "1" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=uboot ; FILE_TO_SEND=$UBOOT_FILE ; do_cmd ; fi ;;
+        *Program\ ATF*) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then
+		if [ "$FIP" == "0" ] ; then
+		  CMD=sa0 ; FILE_TO_SEND=$SA0_FILE ; do_cmd ; sleep 1 ;
+		  CMD=bl2 ; FILE_TO_SEND=$BL2_FILE ; do_cmd ; sleep 2 ;
+		  CMD=sa6 ; FILE_TO_SEND=$SA6_FILE ; do_cmd ;  sleep 1 ;
+		  CMD=bl31 ; FILE_TO_SEND=$BL31_FILE ; do_cmd ;  sleep 2 ;
+		else
+		 CMD=bl2 ; FILE_TO_SEND=$BL2_FILE ; do_cmd ; sleep 2 ;
+		 CMD=fip ; FILE_TO_SEND=$FIP_FILE ; do_cmd ; sleep 2 ;
+		fi
 		fi ;;
-        h.\ *) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then
+        *Program\ All*) if [ "$FIP" == "1" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then
 		CMD=sa0 ; FILE_TO_SEND=$SA0_FILE ; do_cmd ;  sleep 1 ;
 		CMD=bl2 ; FILE_TO_SEND=$BL2_FILE ; do_cmd ;  sleep 2 ;
 		CMD=sa6 ; FILE_TO_SEND=$SA6_FILE ; do_cmd ;  sleep 1 ;
 		CMD=bl31 ; FILE_TO_SEND=$BL31_FILE ; do_cmd ;  sleep 2 ;
 		CMD=uboot ; FILE_TO_SEND=$UBOOT_FILE ; do_cmd ;  sleep 2 ;
 		fi ;;
-        i.\ *) CMD=emmc_config ; FILE_TO_SEND= ; do_cmd ;;
-        s.\ *) do_cmd_sw ;;
+        *eMMC*) CMD=emmc_config ; FILE_TO_SEND= ; do_cmd ;;
+        *switches*) do_cmd_sw ;;
         *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
       esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
     else
@@ -963,9 +1067,10 @@ print_usage() {
 	echo "$0 bl2              # programs BL2 (Trusted Boot Firmware)"
 	echo "$0 sa6              # programs SA6 (Cert Header)"
 	echo "$0 bl31             # programs BL31 (EL3 Runtime Software)"
+	echo "$0 fip              # programs FIP (Firmware Image Package)"
 	echo "$0 uboot            # programs u-boot (BL33, Non-trusted Firmware)"
-	echo "$0 atf              # programs sa0,bl2,sa6,bl31 all at once"
-	echo "$0 all              # programs sa0,bl2,sa6,bl31,uboot all at once"
+	echo "$0 atf              # programs sa0+bl2+sa6+bl31 or bl2+fip all at once"
+	echo "$0 all              # programs sa0+bl2+sa6+bl31+uboot or bl2+fip all at once"
 	echo ""
 	echo "$0 emmc_config      # Configure an eMMC for booting (only needed once)"
 	echo ""
@@ -977,10 +1082,15 @@ print_usage() {
 	echo "         Example: $ $0 sa0 ../../arm-trusted-firmware/tools/dummy_create/bootparam_sa0.srec"
 }
 
+#################################################################
+# Script Start OPP
+#################################################################
+
 # If the first argument is a filename, assume it is the config file.
 if [ -e "$1" ] ; then
   # Read in our settings
   source $1
+  CONFIG_FILE=$1
 
   # The 2nd argument  is the command
   CMD=$2
@@ -991,6 +1101,7 @@ else
   # If BOARD is not already set, assume config.ini as default
   if [ "$BOARD" == "" ] && [ -e "config.ini" ] ; then
     source config.ini
+    CONFIG_FILE=config.ini
   else
     if [ "$FW_GUI_MODE" != "2" ] ; then
       echo "ERROR: Default file \"config.ini\" does not exit."
@@ -1004,6 +1115,11 @@ else
     fi
   fi
 fi
+
+  # RZ/G2L uses FIP instead of BL31
+  if [ "$BOARD" == "smarc-rzg2l" ] ; then
+    FIP=1
+  fi
 
 # Usage is displayed when no arguments on command line
 if [ "$CMD" == "h" ] ; then
@@ -1051,6 +1167,10 @@ elif [ "$FLASH" == "1" ] ; then
 else
   # Programming SPI Flash over SCIF seems to only need a short delay
   CMD_DELAY="0.5"
+
+ if [ "$BOARD" == "smarc-rzg2l" ] ; then
+   CMD_DELAY="1.5"
+ fi
 fi
 
 # Print current selected board
@@ -1063,11 +1183,14 @@ fi
 echo "----------------------------------------------------"
 echo "   Board: $BOARD_NAME"
 echo "  Target: $FLASH_TEXT"
+if [ "$CONFIG_FILE" != "" ] ; then
+echo "  Config: $CONFIG_FILE"
+fi
 echo "----------------------------------------------------"
 
 if [ "$CMD" == "fw" ] ; then
 
-	if [ "$2" != "" ] ; then
+	if [ "$FLASHWRITER" == "" ] && [ "$2" != "" ] ; then
 		FLASHWRITER=$2
 	fi
 
@@ -1122,8 +1245,8 @@ if [ "$CMD" == "emmc_config" ] ; then
 fi
 
 
-if [ "$CMD" == "sa0" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ]; then
-	if [ "$2" != "" ] ; then
+if [ "$CMD" == "sa0" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP" == "0" ] ; then
+	if [ "$SA0_FILE" == "" ] && [ "$2" != "" ] ; then
 		SA0_FILE=$2
 	fi
 
@@ -1140,11 +1263,15 @@ if [ "$CMD" == "sa0" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ]; then
 fi
 
 if [ "$CMD" == "bl2" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
-	if [ "$2" != "" ] ; then
+	if [ "$BL2_FILE" == "" ] && [ "$2" != "" ] ; then
 		BL2_FILE=$2
 	fi
 	if [ "$FLASH" == "0" ] ; then
-		do_spi_write "BL2" E6304000 040000 $BL2_FILE
+		if [ "$FIP" == "0" ] ; then
+			do_spi_write "BL2" E6304000 040000 $BL2_FILE
+		else
+			do_spi_write "BL2" 11E00 000000 $BL2_FILE
+		fi
 	else
 		do_emmc_write "BL2" 1 00001E E6304000 $BL2_FILE
 	fi
@@ -1155,8 +1282,8 @@ if [ "$CMD" == "bl2" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
 	fi
 fi
 
-if [ "$CMD" == "sa6" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
-	if [ "$2" != "" ] ; then
+if [ "$CMD" == "sa6" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP" == "0" ] ; then
+	if [ "$SA6_FILE" == "" ] && [ "$2" != "" ] ; then
 		SA6_FILE=$2
 	fi
 	if [ "$FLASH" == "0" ] ; then
@@ -1171,8 +1298,8 @@ if [ "$CMD" == "sa6" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
 	fi
 fi
 
-if [ "$CMD" == "bl31" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
-	if [ "$2" != "" ] ; then
+if [ "$CMD" == "bl31" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP" == "0" ] ; then
+	if [ "$BL31_FILE" == "" ] && [ "$2" != "" ] ; then
 		BL31_FILE=$2
 	fi
 	if [ "$FLASH" == "0" ] ; then
@@ -1187,8 +1314,8 @@ if [ "$CMD" == "bl31" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
 	fi
 fi
 
-if [ "$CMD" == "uboot" ] || [ "$CMD" == "all" ] ; then
-	if [ "$2" != "" ] ; then
+if [ "$CMD" == "uboot" ] || [ "$CMD" == "all" ] && [ "$FIP" == "0" ] ; then
+	if [ "$UBOOT_FILE" == "" ] && [ "$2" != "" ] ; then
 		UBOOT_FILE=$2
 	fi
 	if [ "$FLASH" == "0" ] ; then
@@ -1203,4 +1330,18 @@ if [ "$CMD" == "uboot" ] || [ "$CMD" == "all" ] ; then
 	fi
 fi
 
+if [ "$CMD" == "fip" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP" == "1" ] ; then
+	if [ "$FIP_FILE" == "" ] && [ "$2" != "" ] ; then
+		FIP_FILE=$2
+	fi
+	if [ "$FLASH" == "0" ] ; then
+		do_spi_write "FIP" 00000 1D200 $FIP_FILE
+	else
+		do_emmc_write "FIP" 1 000200 44000000 $FIP_FILE
+	fi
 
+	if [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
+		# We need extra time before starting the next operation
+		sleep 3
+	fi
+fi

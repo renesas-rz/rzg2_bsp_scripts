@@ -52,3 +52,7 @@ make clean
 make BOARD=EK874  BOOT=WRITER_WITH_CERT USB=ENABLE SERIAL_FLASH=DISABLE EMMC=ENABLE
 cp AArch64_output/AArch64_Flash_writer_SCIF_DUMMY_CERT_E6300400_ek874.mot z_binaries/Flash_writer_ek874_USB_eMMC.mot
 
+make clean
+make BOARD=RZG2L_SMARC
+cp AArch64_output/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot z_binaries/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot
+

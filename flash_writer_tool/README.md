@@ -1,38 +1,52 @@
 ## Program Bootloaders using internal ROM and Flashwriter
 
 ### Description
-The RZ/G2 has a built-in ROM for downloading a binary to internal RAM and then executing it.
-
-That downloaded binary is call "Flash Writer" and is supplied with the VLP64 BSP.
-
-This script helps automate the process of programming a SPI flash or eMMC by download image over a serial port to the board.
-
-If using a Renesas evaluation board, you can use the 'sw' command to print out how you need to modify the on-board switches to get into the correct modes.
-
-There are 2 methods to using this script: Command line or GUI menu
+* The RZ/G2 has a built-in ROM for downloading a binary to internal RAM and then executing it.
+* That downloaded binary is call "Flash Writer" and is supplied with the VLP64 BSP.
+* This script helps automate the process of programming a SPI flash or eMMC by download image over a serial port to the board.
+* If using a Renesas evaluation board, you can use the 'sw' command to print out how you need to modify the on-board switches to get into the correct modes.
+* There are 2 methods to using this script: Command line or GUI menu
 
 ### Using the GUI Menu Interface
 
-When you run the flash_writer.sh script without any arguments, it will operate in a GUI menu mode. In this interface, you can select the files you wish to program. You can also start the programming operations.
-
-Please select your **Board** and **Target Flash**  and **Interface** first, then choose the location (**FILES_DIR**) that contains your binary files to program.
-
-Your board configuration setting can be saved in a .ini file. You can using multiple different .ini files. By default, "config.ini" is chosen.
-
-GUI settings will be saved in the file "settings.txt",
+* When you run the flash\_writer\_tool.sh script without any arguments, it will operate in a GUI menu mode. In this interface, you can select the files you wish to program. You can also start the programming operations.
+* Please select your **Board** and **Target Flash**  and **Interface** first, then choose the location (**FILES_DIR**) that contains your binary files to program.
+* Your board configuration setting can be saved in a .ini file. You can using multiple different .ini files. By default, "config.ini" is chosen.
+* GUI settings will be saved in the file "settings.txt",
 
 ### Using the Command Line Interface
-If you wish to use only the command line, you can see the list of commands by using the following command:
+* If you wish to use only the command line, you can see the list of commands by using the following command:
 
-	$ ./flash_writer.sh  h
+<pre>
+$ ./flash_writer_tool.sh  h
+</pre>
 
-When using the command line interface, you may either pass all board settings and file names on the command line, or store them in a .ini file and pass the filename on the command line.
+* When using the command line interface, you may either pass all board settings and file names on the command line, or store them in a .ini file and pass the filename on the command line.
 
-When using the command line interface, it is recommended to first make a copy of the example configuration (example_config.ini) and then edit it in a text editor.
+* When using the command line interface, it is recommended to first make a copy of the example configuration (example_config.ini) and then edit it in a text editor.
 
-	$ cp example_config.ini config.ini
-	$ gedit config.ini
-	$ ./flash_writer.sh config.ini sw
+<pre>
+$ cp example_config.ini my_config.ini
+$ gedit my_config.ini
+</pre>
+
+* The 'sw' command can be used to show the boot mode switch setting.
+<pre>
+$ ./flash_writer_tool.sh my_config.ini sw
+</pre>
+
+* Below is an example of programming all the files after you have edited the my_config.ini file. Note that the 'fw' command must be run first.
+<pre>
+# RZ/G2E, RZ/G2N, RZ/G2M, RZ/G2H:
+$ ./flash_writer_tool.sh my_config.ini fw
+$ ./flash_writer_tool.sh my_config.ini atf
+$ ./flash_writer_tool.sh my_config.ini u-boot
+</pre>
+<pre>
+# RZ/G2L:
+$ ./flash_writer_tool.sh my_config.ini fw
+$ ./flash_writer_tool.sh my_config.ini atf
+</pre>
 
 ### Instructions
 1. Use either the GUI menu or a .ini config file to selection your board and files.
