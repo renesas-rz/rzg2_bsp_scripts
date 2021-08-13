@@ -545,15 +545,15 @@ do_menu_file_uboot() {
 
 do_cmd_atf() {
 	FW_GUI_MODE=2
-	echo "./flash_writer.sh atf"
-	./flash_writer.sh atf
+	echo "./flash_writer_tool.sh atf"
+	./flash_writer_tool.sh atf
 	FW_GUI_MODE=1
 }
 
 do_cmd_all() {
 	FW_GUI_MODE=2
-	echo "./flash_writer.sh all"
-	./flash_writer.sh all
+	echo "./flash_writer_tool.sh all"
+	./flash_writer_tool.sh all
 	FW_GUI_MODE=1
 }
 
@@ -564,8 +564,8 @@ do_cmd_sw() {
 }
 
 do_cmd() {
-	echo "BOARD=$BOARD FLASH=$FLASH SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE ./flash_writer.sh $CMD $FILE_TO_SEND"
-	BOARD=$BOARD FLASH=$FLASH SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE FW_GUI_MODE=2 ./flash_writer.sh $CMD $FILE_TO_SEND
+	echo "BOARD=$BOARD FLASH=$FLASH SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE ./flash_writer_tool.sh $CMD $FILE_TO_SEND"
+	BOARD=$BOARD FLASH=$FLASH SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE FW_GUI_MODE=2 ./flash_writer_tool.sh $CMD $FILE_TO_SEND
 }
 
 if [ "$FW_GUI_MODE" == "1" ] ; then
@@ -719,7 +719,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       # save if changes
       config_hash
       if [ "$CONFIG_HASH" != "$CONFIG_HASH_RESULT" ] || [ ! -e "$CONFIG_FILE" ] ; then
-        echo "# This file was created by the flash_writer.sh" > $CONFIG_FILE
+        echo "# This file was created by the flash_writer_tool.sh" > $CONFIG_FILE
         echo "BOARD=$BOARD" >> $CONFIG_FILE
         echo "FLASH=$FLASH" >> $CONFIG_FILE
         echo "SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE" >> $CONFIG_FILE
