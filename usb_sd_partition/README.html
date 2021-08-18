@@ -1,0 +1,84 @@
+<HTML>
+<HEAD>
+  <TITLE>README.html</TITLE>
+</HEAD>
+<BODY style="font-family: Arial">
+
+<h1>SD Card &amp; USB Flash Drive Partitioning Script</h1><hr>
+
+<p>This script will erase and reformat a <strong>USB Flash drive</strong> or <strong>SD Card</strong> (via USB card reader) so that it can be used for RZ/G Linux systems.
+This script will also work with a <strong>SD Card reader</strong> slot on a Laptop running Linux.</p>
+
+<h2>Partion Types</h2><hr>
+
+<p>It will have 2 partitions:</p>
+
+<ol>
+<li>FAT16 partition (that can be access by Windows)</li>
+<li>ext2/3/4 partion that can hold a Linux file system.</li>
+</ol>
+
+<h2>Partition Sizes</h2><hr>
+
+<p>The <strong>500MB partition</strong> size is recommended because it doesn't really hold anything else other than the kernel and device tree. But, you might want to copy something into this partition (like an MP3, a JPG or maybe a demo app) from a Windows machine so that you can use access it on your board after it boots up.</p>
+
+<p>The <strong>max</strong> partition size is default because it will always work for any size drive. However you don't really need a lot of space, and the bigger you make it, the longer it takes to format. I would say <strong>2GB</strong> is about as much as you need for the file system.</p>
+
+<h2>Partition Labels</h2><hr>
+
+<p>The script also assigns volume labels to the partitions: <strong>RZ_FAT</strong> and <strong>RZ_ext</strong>.
+This makes the partitions easy to identify in your Linux host machine.
+In Ubuntu, when you plug this formatted drive in, they partitions should automatically get mapped to the following locations:</p>
+
+<ul>
+<li>/media/$USER/RZ_FAT</li>
+<li>/media/$USER/RZ_ext</li>
+</ul>
+
+<p>($USER is automatically set to your username)</p>
+
+<h2>Usage</h2><hr>
+
+<ul>
+<li>Plug in a Flash device</li>
+<li>Run:   $ sudo ./usb_partition.sh</li>
+<li>Remove the drive (first, right click on USB icon on Desktop and select "Eject")</li>
+<li>Insert the drive back in</li>
+</ul>
+
+<h2>How to copy the RZ/G files</h2><hr>
+
+<p>Since the partitions have labels and should show up in your system under /media, you can use the commands below to install your files.
+The FAT partition will need the Device Tree Blob/binary (.dtb file) and the Linux kernel.
+The ext partition should contain the root file system files. Yocto will output a single file with all the file system files tar-ed ('zipped') up, so you will actually be decompressing and copying in the same command.
+The files you need to copy will be in: <br />
+<strong>rzg2_bsp_eva_v10x/build/tmp/deploy/images/ek874/</strong></p>
+
+<p>Execute the follow commands from that directory.</p>
+
+<p><strong>Copy Device Tree</strong></p>
+
+<pre style="background-color: #F6F8FA"><pre style="background-color: #F6F8FA">$ cp -av Image-r8a774c0-ek874.dtb  /media/$USER/RZ_FAT
+</pre></pre>
+
+<p><strong>Copy Kernel</strong></p>
+
+<pre style="background-color: #F6F8FA"><pre style="background-color: #F6F8FA">$ cp -av Image-ek874.bin  /media/$USER/RZ_FAT
+</pre></pre>
+
+<p><strong>Copy/Expand Root File System</strong> <br />
+(don't forget the -C before the target directory)</p>
+
+<pre style="background-color: #F6F8FA"><pre style="background-color: #F6F8FA">$ sudo tar -xvf core-image-weston-ek874.tar.gz   -C /media/$USER/RZ_ext
+</pre></pre>
+
+<p><strong>Sync</strong>
+(makes sure all files are written out before disconnecting)</p>
+
+<pre style="background-color: #F6F8FA"><pre style="background-color: #F6F8FA">$ sync
+$ eject /media/$USER/RZ_FAT
+</pre></pre>
+
+</BODY>
+</HTML>
+

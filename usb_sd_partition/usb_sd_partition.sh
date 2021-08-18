@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# This script will erase and reformat a USB Flash drive (or USB SD Card reader)
-# to be used for RZ/G Linux systems.
+# This script will erase and reformat a 'USB Flash drive', a 'USB SD Card reader',
+# or a 'SD Card reader' (plugged directly into a laptop) to be used for RZ/G Linux systems.
 # It will have 2 partitions:
 #   1.  FAT16 partition (that can be access by Windows)
 #   2.  ext partition that can hold a Linux file system.
@@ -21,21 +21,28 @@ if [ "$?" != "0" ] ; then
 fi
 
 function Find_Drives {
-	# Attached USB Drives
+	# Attached USB Drives show as /dev/sd#
+	# Laptops have SD card slots that show up as /dev/mmcblk
 	TEXT=
-	DISK_LIST=
-	for i in a b c d
+	for i in sda sdb sdc sdd mmcblk0
 	do
-	if [ -e /dev/sd${i} ] ; then
-		dmesg | grep "sd${i}] Attached SCSI removable disk" > /dev/null
-		if [ "$?" != "0" ] ; then
-			continue
-		fi
-		DISK_LIST="$DISK_LIST $i"
+	if [ -e /dev/${i} ] ; then
 
-		ITEM="/dev/sd${i}"
-		DESC=`sudo fdisk -l /dev/sd${i} | grep -m1 sd${i} | sed "s:Disk /dev/sd${i}::"`
-		#DESC=`sudo fdisk -l /dev/sd${i} | grep -m1 sd${i} | sed "s:Disk::"`
+		if [ "${i:0:1}" == "s" ] ; then
+			dmesg | grep "${i}] Attached SCSI removable disk" > /dev/null
+			if [ "$?" != "0" ] ; then
+				continue
+			fi
+		fi
+		if [ "${i:0:1}" == "m" ] ; then
+			dmesg | grep "mmc0" | grep "card" > /dev/null
+			if [ "$?" != "0" ] ; then
+				continue
+			fi
+		fi
+
+		ITEM="/dev/${i}"
+		DESC=`sudo fdisk -l /dev/${i} | grep -m1 ${i} | sed "s:Disk /dev/${i}::"`
 
 		# add to end of array
 		TEXT=("${TEXT[@]}" "$ITEM" "$DESC")
@@ -151,44 +158,6 @@ if [ "$EXT_VER" == "" ] || [ "$EXT_VER" == "EXIT" ] ; then
   exit
 fi
 
-
-#echo "==== Attached USB Drives ====="
-#DISK_LIST=
-#echo -e "------------------------------------------------------------"
-#for i in a b c d
-#do
-#  if [ -e /dev/sd${i} ] ; then
-#     dmesg | grep "sd${i}] Attached SCSI removable disk" > /dev/null
-#     if [ "$?" != "0" ] ; then
-#       continue
-#     fi
-#
-#    DISK_LIST="$DISK_LIST $i"
-#    sudo fdisk -l /dev/sd${i} | grep sd${i}
-#    echo -e "------------------------------------------------------------"
-#  fi
-#done
-
-
-#if [ -e /dev/disk/by-label ] ; then
-#  echo -e "\n==== Partition Lables ====="
-#  echo -n "------------------------------------------------------------"
-#  ls  -l /dev/disk/by-label | awk '{ print $9, $10, $11 }'
-#  echo -e "------------------------------------------------------------"
-#fi
-
-#echo -n "Enter the sd drive letter (a,b,c,d) you want to format (pick one: $DISK_LIST ): "
-#read answer
-#DISK=/dev/sd${answer}
-#
-#
-#if [ ! -e $DISK ] ; then
-#  echo -e "\n\n------------------------------------------------------------"
-#  echo -e "ERROR: Device does not exists: $DISK"
-#  echo -e "------------------------------------------------------------"
-#  exit
-#fi
-
 BEGIN=$(
 whiptail --title "Confirm" --yesno "Begin formatting?" 0 0 \
 	 3>&2 2>&1 1>&3	
@@ -200,13 +169,17 @@ fi
 
 sleep 1
 
-echo -e "\nFormatting USB Disk /dev/sd${DISK}"
+echo -e "\nFormatting Flash Device ${DISK}"
 echo -en "3" ; sleep 1 ; echo -en "\b2" ; sleep 1 ; echo -en "\b1" ; sleep 1 ; echo -e "\b "
 
 echo -e "\n== Unmounting current partitions =="
 sleep 1
 for i in 1 2 3 4
 do
+  if [ "${DISK}" == "/dev/mmcblk0" ] ; then
+    i="p${i}"
+  fi
+
   CHECK=`mount | grep ${DISK}${i}`
   if [ "$CHECK" != "" ] ; then
     echo "Unmounting ${DISK}${i} : umount ${DISK}${i}"
@@ -232,16 +205,29 @@ echo -e "n\np\n1\n\n${FAT_SZ}\n"\
         "p\nw\n" | fdisk -u ${DISK}
 
 echo -e "\n== Formatting FAT16 partition =="
-mkfs.vfat -F16 -n RZ_FAT ${DISK}1
+if [ "${DISK}" == "/dev/mmcblk0" ] ; then
+  PART_NUMBER="p1"
+else
+  PART_NUMBER="1"
+fi
+
+mkfs.vfat -F16 -n RZ_FAT ${DISK}${PART_NUMBER}
 sleep 1
 
 echo -e "\n== Formatting $EXT_VER partition =="
-mkfs.${EXT_VER} -F -L RZ_ext ${DISK}2
+if [ "${DISK}" == "/dev/mmcblk0" ] ; then
+  PART_NUMBER="p2"
+else
+  PART_NUMBER="2"
+fi
+mkfs.${EXT_VER} -F -L RZ_ext ${DISK}${PART_NUMBER}
 sleep 1
 
-#echo -e "\n== Finished ==\nPlease unplug the USB drive and then plug it back in\n"
-whiptail --title "== Finished ==" --msgbox "Please unplug the USB drive and then plug it back in" 0 0
-
+if [ "${DISK}" == "/dev/mmcblk0" ] ; then
+  whiptail --title "== Finished ==" --msgbox "Please remove the SD Card from the system, then plug it back in" 0 0
+else
+  whiptail --title "== Finished ==" --msgbox "Please unplug the USB drive from the system, then plug it back in" 0 0
+fi
 #fdisk -l ${DISK}
 
 #notify-send -t 2000 "Done"
