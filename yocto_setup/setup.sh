@@ -64,15 +64,25 @@ function detect_bsp
 #   $BSP_VERSION_STR
 #   $IS_RT
 {
-  # Detect BSP version based off commit id of CIP kernel
+  # Detect BSP version based off commit id (first 12 characters) of CIP kernel
   BSP_VERSION=""
 
   # v1.0.8
-  grep -q 0882431bf2fe meta-rzg2/recipes-kernel/linux/linux-renesas_4.19.bb
+  grep -q "0882431bf2fe" meta-rzg2/recipes-kernel/linux/linux-renesas_4.19.bb
   if [ "$?" == "0" ] ; then
     BSP_VERSION=108
     BSP_VERSION_STR="VLP64 v1.0.8"
+    IS_RT_RELEASE=0
     IS_RT=0
+  fi
+
+  # v1.0.9-RT
+  grep -q "ba8ac89871d7" meta-rzg2/recipes-kernel/linux/linux-renesas_4.19.bb
+  if [ "$?" == "0" ] ; then
+    BSP_VERSION=109
+    BSP_VERSION_STR="VLP64 v1.0.9-RT"
+    IS_RT_RELEASE=1
+    IS_RT=1
   fi
 
   if [ "$BSP_VERSION" == "" ] ; then
@@ -234,6 +244,36 @@ function do_menu_board()
       *) whiptail --msgbox "Unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
   fi
+}
+
+##################################
+function do_menu_rt()
+{
+  if [ "$IS_RT_RELEASE" == "1" ] ; then
+    STTXT="(NOT fully tested)"
+    RTTXT="(fully tested)"
+  else
+    STTXT="(fully tested)"
+    RTTXT="(NOT fully tested)"
+  fi
+
+  SELECT=$(whiptail --title "Kernel selection" --menu "You may use ESC+ESC to cancel." 0 0 0 \
+	"1.   Standard Kernel" "$STTXT" \
+	"2.   Realtime Kernel" "$RTTXT" \
+	3>&1 1>&2 2>&3)
+  RET=$?
+  if [ $RET -eq 0 ] ; then
+    case "$SELECT" in
+      1.\ *) IS_RT=0 ;;
+      2.\ *) IS_RT=1 ;;
+      *) whiptail --msgbox "Unrecognized option" 20 60 1 ;;
+    esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
+  fi
+
+  if [ "$IS_RT_RELEASE" != "$IS_RT" ] ; then
+    whiptail --msgbox "Please note that this version in this release was not fully tested." 0 0 0
+  fi
+
 }
 
 ##################################
@@ -401,7 +441,7 @@ root=,blue
 	0 0 0 --cancel-button Save --ok-button Change_Item \
 	--default-item "$LAST_SELECT" \
 	"1.                       Board:" "  ${BOARD_NAME[$BOARD]}"  \
-	"2.             Realtime kernel:" "  ${RT_TEXT[$RT]}"  \
+	"2.             Realtime kernel:" "  ${RT_TEXT[$IS_RT]}"  \
 	"3.                  Boot Flash:" "  ${FLASH_TEXT[$FLASH]}" \
 	"4.                    ECC Mode:" "  $ECC_MODE"  \
 	"5.                    CIP Mode:" "  ${CIP_MODE_TEXT[$CIP_MODE]}"  \
@@ -420,7 +460,7 @@ root=,blue
     LAST_SELECT="$SELECT"
     case "$SELECT" in
       1.\ *) do_menu_board ;;
-      2.\ *) show_advanced_msg ;;
+      2.\ *) do_menu_rt ;;
       3.\ *) if [ "$ADVANCED" == "1" ] ; then do_menu_target_flash ; else show_advanced_msg ; fi ;;
       4.\ *) do_menu_ecc ;;
       5.\ *) do_menu_cip_mode ;;
@@ -459,7 +499,7 @@ GLPV3=0 # No GPLv3 packages
 APP_FRAMEWORK=1 # Qt
 INTERNET=1 # Download packages from Internet
 ECC_MODE="None" # No ECC
-RT=0
+IS_RT=0
 
 # Determine what BSP we are using
 detect_bsp
@@ -499,7 +539,7 @@ if [ -e "$LOCAL_CONF" ] ; then
 fi
 
 # First build?
-if [ ! -e "build" ] ; then
+if [ ! -e "$LOCAL_CONF" ] ; then
   echo "[Setting up build environment]"
   source poky/oe-init-build-env
   # This command will leave you in the 'build' directory
@@ -535,13 +575,15 @@ fi
 echo "[Modifying the local.conf file]"
 
 
-# Realtime kernel : $RT
-if [ "$RT" == "1" ] ; then
-  get_current_value "IS_RT_BSP"
-  if [ "$VALUE" == "" ] ; then
-    echo -e "\n\n# Enable Realtime Linux Kerenl build" >> $LOCAL_CONF
-    echo "IS_RT_BSP = \"1\"" >> $LOCAL_CONF
-  fi
+# Realtime kernel
+if [ "$IS_RT" == "1" ] && [ "$IS_RT_RELEASE" == "0" ] ; then
+  # Add value at the end
+  echo -e "\n\n# Enable Realtime Linux Kerenl build" >> $LOCAL_CONF
+  echo "IS_RT_BSP = \"1\"" >> $LOCAL_CONF
+fi
+if [ "$IS_RT" == "0" ] && [ "$IS_RT_RELEASE" == "1" ] ; then
+  # Replace IS_RT_BSP = "1" with  IS_RT_BSP = "0"
+  sed -i "s/IS_RT_BSP = \"1\"/IS_RT_BSP = \"0\"/g" $LOCAL_CONF
 fi
 
 # Boot Flash
