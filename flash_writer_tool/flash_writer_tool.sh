@@ -78,8 +78,14 @@ Switch settings for SW1002.
 "
   fi
 
-  if [ "$BOARD" == "smarc-rzg2l" ] ; then
-	BOARD_NAME="RZ/G2L SMARC Board by Renesas"
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
+	if [ "$BOARD" == "smarc-rzg2l" ] ; then
+		BOARD_NAME="RZ/G2L SMARC Board by Renesas"
+	else
+		BOARD_NAME="RZ/V2L SMARC Board by Renesas"
+	fi
+
+
 	SW_SETTINGS="
 
 Use switches SW11 on Carrier board to set the boot mode.
@@ -187,15 +193,26 @@ set_filenames() {
 	fi
   fi
 
-  if [ "$BOARD" == "smarc-rzg2l" ] ; then
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
 
 	if [ "$FILES_DIR" == "" ] ; then
 		FILES_DIR="."
 	fi
-	if [ "$FLASHWRITER" == "" ] ; then
+	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzg2l" ]; then
 		# As for BSP 1.1, RZ/G2L did not build flash writer as part of the Yocto build
 		FLASHWRITER="./binaries/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
 	fi
+	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzv2l" ]; then
+
+		whiptail --yesno "Do you have the PMIC Power version (Yes) or the Discrete Power version (No)" 0 0 0
+		if [ "$?" == "0" ] ; then
+			FLASHWRITER="./binaries/Flash_Writer_SCIF_RZV2L_SMARC_PMIC_DDR4_2GB_1PCS.mot"
+		else
+			FLASHWRITER="./binaries/Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot"
+
+		fi
+	fi
+
 	if [ "$BL2_FILE" == "" ] ; then
 		BL2_FILE=$FILES_DIR/bl2_bp-${BOARD}.srec
 	fi
@@ -306,7 +323,8 @@ do_menu_board() {
 	"3 hihope-rzg2n" "  HiHope RZ/G2N by Hoperun Technology" \
 	"4 hihope-rzg2h" "  HiHope RZ/G2H by Hoperun Technology" \
 	"5 smarc-rzg2l " "  SMARC RZ/G2L by Renesas Electronics" \
-	"6 CUSTOM"       "  (manually edit ini file)" \
+	"6 smarc-rzv2l " "  SMARC RZ/V2L by Renesas Electronics" \
+	"0 CUSTOM"       "  (manually edit ini file)" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -317,7 +335,8 @@ do_menu_board() {
       3\ *) BOARD=hihope-rzg2n ;;
       4\ *) BOARD=hihope-rzg2h ;;
       5\ *) BOARD=smarc-rzg2l ; FIP=1 ;;
-      5\ *) BOARD=CUSTOM ;;
+      6\ *) BOARD=smarc-rzv2l ; FIP=1 ;;
+      0\ *) BOARD=CUSTOM ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
 
@@ -662,6 +681,11 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       DETECTED=1
     elif [ -e ../../build/tmp/deploy/images/smarc-rzg2l ] ; then
       BOARD="smarc-rzg2l"
+      FIP=1
+      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
+      DETECTED=1
+    elif [ -e ../../build/tmp/deploy/images/smarc-rzv2l ] ; then
+      BOARD="smarc-rzv2l"
       FIP=1
       FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
@@ -1116,8 +1140,8 @@ else
   fi
 fi
 
-  # RZ/G2L uses FIP instead of BL31
-  if [ "$BOARD" == "smarc-rzg2l" ] ; then
+  # RZ/G2L and RZ/V2L uses FIP instead of BL31
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
     FIP=1
   fi
 
@@ -1168,7 +1192,7 @@ else
   # Programming SPI Flash over SCIF seems to only need a short delay
   CMD_DELAY="0.5"
 
- if [ "$BOARD" == "smarc-rzg2l" ] ; then
+ if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
    CMD_DELAY="1.5"
  fi
 fi
