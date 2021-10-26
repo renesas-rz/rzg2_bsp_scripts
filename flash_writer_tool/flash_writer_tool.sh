@@ -203,8 +203,7 @@ set_filenames() {
 		FILES_DIR="."
 	fi
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzg2l" ]; then
-		# As for BSP 1.1, RZ/G2L did not build flash writer as part of the Yocto build
-		FLASHWRITER="./binaries/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
+		FLASHWRITER=$FILES_DIR/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot
 	fi
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzv2l" ]; then
 
