@@ -196,6 +196,9 @@ set_filenames() {
 
   if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
 
+	FIP=1
+	EMMC_4BIT=1
+
 	if [ "$FILES_DIR" == "" ] ; then
 		FILES_DIR="."
 	fi
