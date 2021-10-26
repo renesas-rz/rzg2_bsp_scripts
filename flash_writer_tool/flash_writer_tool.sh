@@ -10,6 +10,7 @@ fi
 
 # Global Settings
 FIP=0 # TF-A uses FIP instead of BL31
+EMMC_4BIT=0 # eMMC uses 4-bit data, not 8-bit
 
 # Set BOARD_NAME and SW_SETTINGS
 switch_settings() {
@@ -90,19 +91,19 @@ Switch settings for SW1002.
 
 Use switches SW11 on Carrier board to set the boot mode.
 
-SCIF Download Mode                     SPI Boot Mode
---------------------------------------------------------------
- SW11-1 = OFF                     SW11-1 = OFF
- SW11-2 = ON                      SW11-2 = OFF
- SW11-3 = OFF                     SW11-3 = OFF
- SW11-4 = ON                      SW11-4 = ON
+   SCIF Download Mode       SPI Boot Mode        eMMC Boot Mode
+----------------------------------------------------------------
+      SW11-1 = OFF           SW11-1 = OFF          SW11-1 = ON
+      SW11-2 = ON            SW11-2 = OFF          SW11-2 = OFF
+      SW11-3 = OFF           SW11-3 = OFF          SW11-3 = OFF
+      SW11-4 = ON            SW11-4 = ON           SW11-4 = ON
 
-      +---------+                 +---------+
-      | ON      |                 | ON      |
- SW11 |   =   = |            SW11 |       = |
-      | =   =   |                 | = = =   |
-      | 1 2 3 4 |                 | 1 2 3 4 |
-      +---------+                 +---------+
+      +---------+           +---------+           +---------+
+      | ON      |           | ON      |           | ON      |
+ SW11 |   =   = |      SW11 |       = |      SW11 |       = |
+      | =   =   |           | = = =   |           | = = =   |
+      | 1 2 3 4 |           | 1 2 3 4 |           | 1 2 3 4 |
+      +---------+           +---------+           +---------+
 "
   fi
 }
@@ -329,13 +330,14 @@ do_menu_board() {
   RET=$?
   if [ $RET -eq 0 ] ; then
     FIP=0
+    EMMC_4BIT=0
     case "$SELECT" in
       1\ *) BOARD=ek874 ;;
       2\ *) BOARD=hihope-rzg2m ;;
       3\ *) BOARD=hihope-rzg2n ;;
       4\ *) BOARD=hihope-rzg2h ;;
-      5\ *) BOARD=smarc-rzg2l ; FIP=1 ;;
-      6\ *) BOARD=smarc-rzv2l ; FIP=1 ;;
+      5\ *) BOARD=smarc-rzg2l ; FIP=1 ; EMMC_4BIT=1 ;;
+      6\ *) BOARD=smarc-rzv2l ; FIP=1 ; EMMC_4BIT=1 ;;
       0\ *) BOARD=CUSTOM ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
@@ -682,11 +684,13 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
     elif [ -e ../../build/tmp/deploy/images/smarc-rzg2l ] ; then
       BOARD="smarc-rzg2l"
       FIP=1
+      EMMC_4BIT=1
       FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
     elif [ -e ../../build/tmp/deploy/images/smarc-rzv2l ] ; then
       BOARD="smarc-rzv2l"
       FIP=1
+      EMMC_4BIT=1
       FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
     else
@@ -841,6 +845,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
         echo "FW_PREBUILT=$FW_PREBUILT" >> $CONFIG_FILE
         echo "FLASHWRITER=$FLASHWRITER" >> $CONFIG_FILE
         echo "FIP=$FIP" >> $CONFIG_FILE
+        echo "EMMC_4BIT=$EMMC_4BIT" >> $CONFIG_FILE
         echo "SA0_FILE=$SA0_FILE" >> $CONFIG_FILE
         echo "BL2_FILE=$BL2_FILE" >> $CONFIG_FILE
         echo "SA6_FILE=$SA6_FILE" >> $CONFIG_FILE
@@ -1143,6 +1148,7 @@ fi
   # RZ/G2L and RZ/V2L uses FIP instead of BL31
   if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
     FIP=1
+    EMMC_4BIT=1
   fi
 
 # Usage is displayed when no arguments on command line
@@ -1246,14 +1252,22 @@ fi
 if [ "$CMD" == "emmc_config" ] ; then
 
 	# Set the EXT_CSD register 177 (0xB1) BOOT_BUS_CONDITIONS:
+	# RZ/G2E, RZ/G2N, RZ/G2M, RZ/G2H
 	#  * BOOT_MODE bit[4:3] = 0x1 (Use single data rate + High Speed timings in boot operation mode)(50MHz SDR)
 	#  * BOOT_BUS_WIDTH bit[1:0] = 0x2 (x8 bus width in boot operation mode)
+	# RZ/G2L, RZ/V2L
+	#  * BOOT_MODE bit[4:3] = 0x0 (Use single data rate + backward compatible timings in boot operation (50MHz SDR) (default)
+	#  * BOOT_BUS_WIDTH bit[1:0] = 0x1 (x4 bus width in boot operation mode)
 	echo "Setting EXT_CSD regiser 177..."
 	echo -en "EM_SECSD\r" > $SERIAL_DEVICE_INTERFACE
 	sleep $CMD_DELAY
 	echo -en "b1\r" > $SERIAL_DEVICE_INTERFACE
 	sleep $CMD_DELAY
-	echo -en "0a\r" > $SERIAL_DEVICE_INTERFACE
+	if [ "$EMMC_4BIT" == "1" ] ; then
+		echo -en "02\r" > $SERIAL_DEVICE_INTERFACE
+	else
+		echo -en "0a\r" > $SERIAL_DEVICE_INTERFACE
+	fi
 	sleep $CMD_DELAY
 
 	# Set the EXT_CSD register 179 (0xB3) PARTITION_CONFIG:
@@ -1297,7 +1311,11 @@ if [ "$CMD" == "bl2" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
 			do_spi_write "BL2" 11E00 000000 $BL2_FILE
 		fi
 	else
-		do_emmc_write "BL2" 1 00001E E6304000 $BL2_FILE
+		if [ "$FIP" == "0" ] ; then
+			do_emmc_write "BL2" 1 00001E E6304000 $BL2_FILE
+		else
+			do_emmc_write "BL2" 1 000001 00011E00 $BL2_FILE
+		fi
 	fi
 
 	if [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
@@ -1361,7 +1379,7 @@ if [ "$CMD" == "fip" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP"
 	if [ "$FLASH" == "0" ] ; then
 		do_spi_write "FIP" 00000 1D200 $FIP_FILE
 	else
-		do_emmc_write "FIP" 1 000200 44000000 $FIP_FILE
+		do_emmc_write "FIP" 1 100 00000000 $FIP_FILE
 	fi
 
 	if [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
