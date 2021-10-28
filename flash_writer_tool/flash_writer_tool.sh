@@ -82,8 +82,23 @@ Switch settings for SW1002.
   if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
 	if [ "$BOARD" == "smarc-rzg2l" ] ; then
 		BOARD_NAME="RZ/G2L SMARC Board by Renesas"
+		if [ "$BOARD_VERSION" == "PMIC" ] ; then
+			BOARD_NAME="$BOARD (PMIC Version)"
+		fi
+		if [ "$BOARD_VERSION" == "DISCRETE" ] ; then
+			BOARD_NAME="$BOARD (Discrete Version)"
+		fi
+		if [ "$BOARD_VERSION" == "WS1" ] ; then
+			BOARD_NAME="$BOARD (WS1)"
+		fi
 	else
 		BOARD_NAME="RZ/V2L SMARC Board by Renesas"
+		if [ "$BOARD_VERSION" == "PMIC" ] ; then
+			BOARD_NAME="$BOARD (PMIC Version)"
+		fi
+		if [ "$BOARD_VERSION" == "DISCRETE" ] ; then
+			BOARD_NAME="$BOARD (Discrete Version)"
+		fi
 	fi
 
 
@@ -121,6 +136,7 @@ clear_filenames() {
 # Use this function to determine if any config settings have changed
 config_hash() {
   CONFIG_HASH_RESULT=$(echo "$BOARD" \
+  "$BOARD_VERSION" \
   "$FLASH" \
   "$SERIAL_DEVICE_INTERFACE" \
   "$FILES_DIR" \
@@ -203,16 +219,17 @@ set_filenames() {
 		FILES_DIR="."
 	fi
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzg2l" ]; then
-		FLASHWRITER=$FILES_DIR/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot
+		if [ "$BOARD_VERSION" == "PMIC" ] ; then
+			FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZG2L_SMARC_PMIC_DDR4_2GB_1PCS.mot"
+		else
+			FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
+		fi
 	fi
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzv2l" ]; then
-
-		whiptail --yesno "Do you have the PMIC Power version (Yes) or the Discrete Power version (No)" 0 0 0
-		if [ "$?" == "0" ] ; then
+		if [ "$BOARD_VERSION" == "PMIC" ] ; then
 			FLASHWRITER="./binaries/Flash_Writer_SCIF_RZV2L_SMARC_PMIC_DDR4_2GB_1PCS.mot"
 		else
 			FLASHWRITER="./binaries/Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot"
-
 		fi
 	fi
 
@@ -252,7 +269,6 @@ set_fw_binary() {
 
     FLASHWRITER="./binaries/Flash_writer_${B_NAME}_${S_NAME}_${F_NAME}.mot"
 
-    # As for BSP 1.1, RZ/G2L only support SCIF download mode and booting from SPI Flash
     if [ "$BOARD" == "smarc-rzg2l" ] ; then
       FLASHWRITER="./binaries/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
     fi
@@ -338,8 +354,22 @@ do_menu_board() {
       2\ *) BOARD=hihope-rzg2m ;;
       3\ *) BOARD=hihope-rzg2n ;;
       4\ *) BOARD=hihope-rzg2h ;;
-      5\ *) BOARD=smarc-rzg2l ; FIP=1 ; EMMC_4BIT=1 ;;
-      6\ *) BOARD=smarc-rzv2l ; FIP=1 ; EMMC_4BIT=1 ;;
+      5\ *) BOARD=smarc-rzg2l ; FIP=1 ; EMMC_4BIT=1
+	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?\n\nThe PMIC version has \"Reneas\" printed in the middle of the SOM board.\nThe Discrete version has \"Renesas\" printed at the edge of the SOM baord.   " 0 0 0
+	if [ "$?" == "0" ] ; then
+		BOARD_VERSION="PMIC"
+	else
+		BOARD_VERSION="DISCRETE"
+	fi
+      ;;
+      6\ *) BOARD=smarc-rzv2l ; FIP=1 ; EMMC_4BIT=1
+	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?" 0 0 0
+	if [ "$?" == "0" ] ; then
+		BOARD_VERSION="PMIC"
+	else
+		BOARD_VERSION="DISCRETE"
+	fi
+      ;;
       0\ *) BOARD=CUSTOM ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
@@ -689,12 +719,22 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       EMMC_4BIT=1
       FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
+      if [ -e "$FILES_DIR/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot" ] ; then
+        BOARD_VERSION="DISCRETE"
+      else
+        BOARD_VERSION="PMIC"
+      fi
     elif [ -e ../../build/tmp/deploy/images/smarc-rzv2l ] ; then
       BOARD="smarc-rzv2l"
       FIP=1
       EMMC_4BIT=1
       FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
+      if [ -e "$FILES_DIR/Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot" ] ; then
+        BOARD_VERSION="DISCRETE"
+      else
+        BOARD_VERSION="PMIC"
+      fi
     else
       # default to RZ/G2M
       BOARD="hihope-rzg2m"
@@ -840,6 +880,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       if [ "$CONFIG_HASH" != "$CONFIG_HASH_RESULT" ] || [ ! -e "$CONFIG_FILE" ] ; then
         echo "# This file was created by the flash_writer_tool.sh" > $CONFIG_FILE
         echo "BOARD=$BOARD" >> $CONFIG_FILE
+        echo "BOARD_VERSION=$BOARD_VERSION" >> $CONFIG_FILE
         echo "FLASH=$FLASH" >> $CONFIG_FILE
         echo "SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE" >> $CONFIG_FILE
 
