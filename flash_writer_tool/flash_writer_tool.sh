@@ -79,7 +79,7 @@ Switch settings for SW1002.
 "
   fi
 
-  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
 	if [ "$BOARD" == "smarc-rzg2l" ] ; then
 		BOARD_NAME="RZ/G2L SMARC Board by Renesas"
 		if [ "$BOARD_VERSION" == "PMIC" ] ; then
@@ -91,7 +91,11 @@ Switch settings for SW1002.
 		if [ "$BOARD_VERSION" == "WS1" ] ; then
 			BOARD_NAME="$BOARD (WS1)"
 		fi
-	else
+	fi
+	if [ "$BOARD" == "smarc-rzg2lc" ] ; then
+		BOARD_NAME="RZ/G2LC SMARC Board by Renesas"
+	fi
+	if [ "$BOARD" == "smarc-rzv2l" ] ; then
 		BOARD_NAME="RZ/V2L SMARC Board by Renesas"
 		if [ "$BOARD_VERSION" == "PMIC" ] ; then
 			BOARD_NAME="$BOARD (PMIC Version)"
@@ -100,7 +104,6 @@ Switch settings for SW1002.
 			BOARD_NAME="$BOARD (Discrete Version)"
 		fi
 	fi
-
 
 	SW_SETTINGS="
 
@@ -210,7 +213,7 @@ set_filenames() {
 	fi
   fi
 
-  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzv2l" ]; then
 
 	FIP=1
 	EMMC_4BIT=1
@@ -224,6 +227,9 @@ set_filenames() {
 		else
 			FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
 		fi
+	fi
+	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzg2lc" ]; then
+		FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZG2LC_SMARC_DDR4_1GB_1PCS.mot"
 	fi
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzv2l" ]; then
 		if [ "$BOARD_VERSION" == "PMIC" ] ; then
@@ -271,6 +277,9 @@ set_fw_binary() {
 
     if [ "$BOARD" == "smarc-rzg2l" ] ; then
       FLASHWRITER="./binaries/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
+    fi
+    if [ "$BOARD" == "smarc-rzg2lc" ] ; then
+      FLASHWRITER="./binaries/Flash_Writer_SCIF_RZG2LC_SMARC_DDR4_1GB_1PCS.mot"
     fi
   fi
 }
@@ -342,7 +351,8 @@ do_menu_board() {
 	"3 hihope-rzg2n" "  HiHope RZ/G2N by Hoperun Technology" \
 	"4 hihope-rzg2h" "  HiHope RZ/G2H by Hoperun Technology" \
 	"5 smarc-rzg2l " "  SMARC RZ/G2L by Renesas Electronics" \
-	"6 smarc-rzv2l " "  SMARC RZ/V2L by Renesas Electronics" \
+	"6 smarc-rzg2lc " " SMARC RZ/G2LC by Renesas Electronics" \
+	"7 smarc-rzv2l " "  SMARC RZ/V2L by Renesas Electronics" \
 	"0 CUSTOM"       "  (manually edit ini file)" \
 	3>&1 1>&2 2>&3)
   RET=$?
@@ -362,7 +372,8 @@ do_menu_board() {
 		BOARD_VERSION="DISCRETE"
 	fi
       ;;
-      6\ *) BOARD=smarc-rzv2l ; FIP=1 ; EMMC_4BIT=1
+      6\ *) BOARD=smarc-rzg2lc ; FIP=1 ; EMMC_4BIT=1 ;;
+      7\ *) BOARD=smarc-rzv2l ; FIP=1 ; EMMC_4BIT=1
 	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?" 0 0 0
 	if [ "$?" == "0" ] ; then
 		BOARD_VERSION="PMIC"
@@ -724,6 +735,12 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       else
         BOARD_VERSION="PMIC"
       fi
+    elif [ -e ../../build/tmp/deploy/images/smarc-rzg2lc ] ; then
+      BOARD="smarc-rzg2lc"
+      FIP=1
+      EMMC_4BIT=1
+      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
+      DETECTED=1
     elif [ -e ../../build/tmp/deploy/images/smarc-rzv2l ] ; then
       BOARD="smarc-rzv2l"
       FIP=1
@@ -1189,7 +1206,7 @@ else
 fi
 
   # RZ/G2L and RZ/V2L uses FIP instead of BL31
-  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
     FIP=1
     EMMC_4BIT=1
   fi
@@ -1241,7 +1258,7 @@ else
   # Programming SPI Flash over SCIF seems to only need a short delay
   CMD_DELAY="0.5"
 
- if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
+ if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
    CMD_DELAY="1.5"
  fi
 fi
