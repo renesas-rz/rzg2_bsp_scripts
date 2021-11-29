@@ -85,6 +85,15 @@ function detect_bsp
     IS_RT=1
   fi
 
+  # v1.0.10
+  grep -q "54f39790f577" meta-rzg2/recipes-kernel/linux/linux-renesas_4.19.bb
+  if [ "$?" == "0" ] ; then
+    BSP_VERSION=1010
+    BSP_VERSION_STR="VLP64 v1.0.10"
+    IS_RT_RELEASE=0
+    IS_RT=0
+  fi
+
   if [ "$BSP_VERSION" == "" ] ; then
     whiptail --msgbox "ERROR: BSP version not supported." 0 0
     exit

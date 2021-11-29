@@ -5,6 +5,7 @@ This repository contains helpful scripts to be used with the official Renesas BS
 ## Supported BSP versions
 * VLP64 v1.0.8
 * VLP64 v1.0.9-RT
+* VLP64 v1.0.10
 
 ## Install
 To install, please place this repository as a directory named 'scripts' under the yocto BSP directory.<br>
