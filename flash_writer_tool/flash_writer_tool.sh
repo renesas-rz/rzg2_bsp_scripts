@@ -165,7 +165,7 @@ settings_hash() {
 check_fw_first() {
 
 	unset CMD_ABORT
-	
+
 	if [ "$FW_NOT_DL_YET" == "1" ] ; then
 		ANSWER=$(whiptail --yesno --defaultno "WARNING !\n\nThe Flash writer binary has not been downloaded yet.\
 \n\nThe Flash Writer program must be downloaded and running for programming to work.\n\nContinue anyway?" 0 0 3>&1 1>&2 2>&3; echo $?)
@@ -224,6 +224,8 @@ set_filenames() {
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzg2l" ]; then
 		if [ "$BOARD_VERSION" == "PMIC" ] ; then
 			FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZG2L_SMARC_PMIC_DDR4_2GB_1PCS.mot"
+			BL2_FILE=$FILES_DIR/bl2_bp-${BOARD}_pmic.srec
+			FIP_FILE=$FILES_DIR/fip-${BOARD}_pmic.srec
 		else
 			FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
 		fi
@@ -292,7 +294,7 @@ do_menu_config() {
   RET=$?
   if [ $RET -eq 0 ] ; then
     case "$SELECT" in
-      1\ *) 
+      1\ *)
 		which zenity > /dev/null
 		if [ "$?" != "0" ] ; then
 			whiptail --yesno "ERROR: You need the (small) \"zenity\" dialog box utility installed.\nYou can install by running:\n\n$ sudo apt-get install zenity\n\nRun that command now to install?" 0 0 0
@@ -323,7 +325,7 @@ do_menu_config() {
 			esac
 		fi
 		;;
-      2\ *) 
+      2\ *)
 		SELECT=$(whiptail --title "Config File Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter the filename to your config file." 0 100 \
 		"config.ini"  \
 		3>&1 1>&2 2>&3)
@@ -443,12 +445,12 @@ do_menu_colors() {
   RET=$?
   if [ $RET -eq 0 ] ; then
     case "$SELECT" in
-      1\ *) 
+      1\ *)
 export NEWT_COLORS='
 root=,blue
 '
 ;;
-      2\ *) 
+      2\ *)
 export NEWT_COLORS='
     root=green,black
     border=green,black
@@ -465,7 +467,7 @@ export NEWT_COLORS='
     actcheckbox=black,green
 '
 ;;
-      3\ *) 
+      3\ *)
 export NEWT_COLORS='
     root=white,black
     border=black,lightgray
@@ -522,7 +524,7 @@ do_menu_file_dir() {
   RET=$?
   if [ $RET -eq 0 ] ; then
     case "$SELECT" in
-      1\ *) 
+      1\ *)
 		which zenity > /dev/null
 		if [ "$?" != "0" ] ; then
 			whiptail --yesno "ERROR: You need the (small) \"zenity\" dialog box utility installed.\nYou can install by running:\n\n$ sudo apt-get install zenity\n\nRun that command now to install?" 0 0 0
@@ -547,7 +549,7 @@ do_menu_file_dir() {
 			esac
 		fi
 		;;
-      2\ *) 
+      2\ *)
 		SELECT=$(whiptail --title "File Direcotry Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter the base directory you want to use." 0 100 \
 		"$FILES_DIR"  \
 		3>&1 1>&2 2>&3)
@@ -730,11 +732,8 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       EMMC_4BIT=1
       FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
-      if [ -e "$FILES_DIR/Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot" ] ; then
-        BOARD_VERSION="DISCRETE"
-      else
-        BOARD_VERSION="PMIC"
-      fi
+      # Select PMIC version as default
+      BOARD_VERSION="PMIC"
     elif [ -e ../../build/tmp/deploy/images/smarc-rzg2lc ] ; then
       BOARD="smarc-rzg2lc"
       FIP=1
@@ -747,11 +746,8 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       EMMC_4BIT=1
       FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
-      if [ -e "$FILES_DIR/Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot" ] ; then
-        BOARD_VERSION="DISCRETE"
-      else
-        BOARD_VERSION="PMIC"
-      fi
+      # Select PMIC version as default
+      BOARD_VERSION="PMIC"
     else
       # default to RZ/G2M
       BOARD="hihope-rzg2m"
