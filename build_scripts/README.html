@@ -1,0 +1,124 @@
+<HTML>
+<HEAD>
+  <TITLE>README.html</TITLE>
+</HEAD>
+<BODY style="font-family: Arial">
+
+<h1>RZ/G2 Build Scripts</h1><hr>
+
+<ul>
+<li>These scripts allow you to build BSP software components outside of the Yocto build environment.</li>
+<li>The following boards are supported:</li>
+</ul>
+
+<table cellpadding=2 border=1 style="border:1px solid black; border-collapse: collapse;">
+<tr><th>SoC</th><th>Board</th><th>BSP</th></tr>
+<tr><td>RZ/G2E</td><td>EK874</td><td>RZ/G2 VLP64</td></tr>
+<tr><td>RZ/G2M</td><td>HiHope</td><td>RZ/G2 VLP64</td></tr>
+<tr><td>RZ/G2N</td><td>HiHope</td><td>RZ/G2 VLP64</td></tr>
+<tr><td>RZ/G2H</td><td>HiHope</td><td>RZ/G2 VLP64</td></tr>
+<tr><td>RZ/G2L</td><td>SMARC</td><td>RZ/G2L BSP</td></tr>
+<tr><td>RZ/G2LC</td><td>SMARC</td><td>RZ/G2L BSP</td></tr>
+</table>
+
+<h2>Repository Installs</h2><hr>
+
+<ul>
+<li>These scripts will not download any source code repositories. You must do that manually.</li>
+<li>Please refer to file <strong>Repository Installs.txt</strong> to find copy/paste commands to get the source code for each BSP software component.</li>
+<li>Note that for some repositories, especially the kernel repositories, you may need additional patches that are not in the public github repositories. Those patches are only distributed in the BSP pacakge that is downloaded from renesas.com.</li>
+</ul>
+
+<h2>Toolchain Installs</h2><hr>
+
+<ul>
+<li>You can use the Yocto SDK Toolchain from the Renesas BSP.</li>
+<li>You can also use an external toolchain such as Linaro or ARM.</li>
+<li>Please refer to file <strong>Toolchain Installs.txt</strong> to find copy/paste commands to download and install pre-built Toolchains.</li>
+</ul>
+
+<h2>Source Code Directory Locations and Names</h2><hr>
+
+<ul>
+<li>This script assumes that your source code repositories are kept in a directory under this one and they use the <strong>same directory names</strong> as below.</li>
+<li><p>To use a different directly name, you can manually edit the <strong>board.ini</strong> file.</p></li>
+<li><p>For example:</p></li>
+</ul>
+
+<pre style="background-color: #F6F8FA">
+├── build_scripts
+│   ├── mbedtls/                   <<<<<<
+│   ├── renesas-u-boot-cip/        <<<<<<
+│   ├── rzg2_flash_writer/         <<<<<<
+│   ├── rzg_trusted-firmware-a/    <<<<<<
+│   ├── rz_linux-cip/              <<<<<<
+│   ├── build.sh
+│   ├── build_xxxx.sh
+│   ├── build_xxxx.sh
+│   ├── README.html
+│   └── README.md
+</pre>
+
+<p><strong>Hint:</strong><br>
+* You can create a new directory and use symlinks to the build.sh files.
+* This will allow you to keep 1 copy of this bsp scripts repository on your PC, but use the build files in multiple places.
+* Then if you update your \rzg2_bsp_scripts repository (git pull), all your build scripts will be also updated (because they all point back to the same place).<br>
+* For example:</p>
+
+<pre style="background-color: #F6F8FA">
+$ mkdir rzg2l_code
+$ cd rzg2l_code
+$ for i in ~/rzg2_bsp_scripts/build_scripts/build*.sh ; do ln -vs $i ; done
+$ ls -l
+</pre>
+
+<h2>Board Settings File (board.ini)</h2><hr>
+
+<ul>
+<li>All the configuration settings for your board will be saved in a <strong>board.ini</strong> file.</li>
+<li>This file will be automatically created for you when you use the setup command <strong>./build.sh s</strong></li>
+<li>You should not need to modify any of the build_xxx.sh files.</li>
+</ul>
+
+<h2>Output Directory</h2><hr>
+
+<ul>
+<li>After each build, the files you need will be copied to an output directory named output_xxxx where xxxx is the name of your board.</li>
+</ul>
+
+<pre style="background-color: #F6F8FA">
+├── build_scripts
+│   ├── rzg_trusted-firmware-a/
+│   ├── renesas-u-boot-cip/
+│   ├── output_xxxx/               <<<<<<
+│   ├── build.sh
+│   └── README.md
+</pre>
+
+<h2>Getting Started</h2><hr>
+
+<p>1) Install a toolchain as explained in the <strong>Toolchain Installs.txt</strong> document.</p>
+
+<p>2) Download (clone) the source code repositories as explained in the <strong>Repository Installs.txt</strong> document and apply any patches that are needed.</p>
+
+<p>3) Use command 's' first to <strong>select</strong> your board and toolchain.</p>
+
+<pre style="background-color: #F6F8FA">
+$ ./build.sh s
+</pre>
+
+<p>4) Run the <strong>build.sh</strong> script with no arguments to get a list of command options. <strong>Do not run the other build_xxx.sh file directly.</strong> Only call build.sh.
+Example:</p>
+
+<pre style="background-color: #F6F8FA">
+$ ./build.sh s             # Select your target board
+$ ./build.sh               # Show a list of command options
+$ ./build.sh f             # Build flash writer
+$ ./build.sh u             # Build u-boot
+$ ./build.sh t             # Build trusted firmware
+$ ./build.sh k             # Build Linux kernel
+</pre>
+
+</BODY>
+</HTML>
+
