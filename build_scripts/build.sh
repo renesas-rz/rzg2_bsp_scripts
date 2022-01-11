@@ -24,6 +24,8 @@
 # MACHINE=smarc-rzg2l	# Renesas RZ/G2L EVK
 #   BOARD_VERSION: DISCRETE, PMIC, WS1
 # MACHINE=smarc-rzg2lc	# Renesas RZ/G2LC EVK
+# MACHINE=smarc-rzv2l	# Renesas RZ/V2L EVK
+#   BOARD_VERSION: DISCRETE, PMIC
 
 
 #----------------------------------------------
@@ -194,6 +196,7 @@ if [ "$1" == "s" ] ; then
 	"4  ek874" "Silicon Linux RZ/G2E" \
 	"5  smarc-rzg2l" "Renesas SMARC RZ/G2L" \
 	"6  smarc-rzg2lc" "Renesas SMARC RZ/G2LC" \
+	"7  smarc-rzv2l" "Renesas SMARC RZ/V2L" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -214,6 +217,16 @@ if [ "$1" == "s" ] ; then
 	fi
       ;;
       6\ *) FW_BOARD=RZG2LC_SMARC ; MACHINE=smarc-rzg2lc ;;
+      7\ *) FW_BOARD=RZV2L_SMARC ; MACHINE=smarc-rzv2l
+	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?\n\nThe PMIC version has \"Reneas\" printed in the middle of the SOM board.\nThe Discrete version has \"Renesas\" printed at the edge of the SOM baord.   " 0 0 0
+	if [ "$?" == "0" ] ; then
+		BOARD_VERSION="PMIC"
+		FW_BOARD=RZV2L_SMARC_PMIC
+	else
+		BOARD_VERSION="DISCRETE"
+		FW_BOARD=RZV2L_SMARC
+	fi
+      ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
   else
@@ -245,7 +258,7 @@ if [ "$1" == "s" ] ; then
   save_setting FW_BOARD $FW_BOARD
 
   # Set defaults for Flash Writer script
-  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] ; then
+  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] || [ "$MACHINE" == "smarc-rzv2l" ]; then
     save_setting TFA_FIP 1
   else
     save_setting TFA_FIP 0

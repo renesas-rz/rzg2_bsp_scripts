@@ -11,6 +11,8 @@
 # MACHINE=smarc-rzg2l
 #   BOARD_VERSION: DISCRETE, PMIC, WS1
 # MACHINE=smarc-rzg2lc
+# MACHINE=smarc-rzgvl
+#   BOARD_VERSION: DISCRETE, PMIC
 
 #TFA_BOOT: 0=SPI Flash, 1=eMMC
 #TFA_ECC_FULL: 0=no ECC, 1=ECC dual channel, 2=ECC single channel
@@ -49,7 +51,7 @@ if [ "$TFA_DEBUG" == "" ] ; then
 fi
 if [ "$TFA_FIP" == "" ] ; then
 
-  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] ; then
+  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] || [ "$MACHINE" == "smarc-rzv2l" ] ; then
     TFA_FIP=1
   else
     TFA_FIP=0
@@ -202,6 +204,13 @@ create_fip_and_copy() {
 
   # RZ/G2L PMIC board have _pmic at the end of the filename
   if [ "$MACHINE" == "smarc-rzg2l" ] && [ "$BOARD_VERSION" == "PMIC" ] ; then
+    EXTRA="_pmic"
+  else
+    EXTRA=""
+  fi
+
+  # RZ/V2L PMIC board have _pmic at the end of the filename
+  if [ "$MACHINE" == "smarc-rzv2l" ] && [ "$BOARD_VERSION" == "PMIC" ] ; then
     EXTRA="_pmic"
   else
     EXTRA=""
@@ -485,6 +494,20 @@ case "$MACHINE" in
   "smarc-rzg2lc")
     PLATFORM=g2l
     TFA_OPT="BOARD=smarc_1"
+
+    TOOL=
+    ;;
+
+  "smarc-rzv2l")
+   PLATFORM=v2l
+   if [ "$BOARD_VERSION" == "PMIC" ] ; then
+     TFA_OPT="BOARD=smarc_pmic_2"
+   else
+     TFA_OPT="BOARD=smarc_4"
+   fi
+
+    # Internal Renesas Boards
+    #TFA_OPT="BOARD=dev15_4" #rzv2l-dev
 
     TOOL=
     ;;

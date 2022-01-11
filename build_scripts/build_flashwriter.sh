@@ -16,6 +16,8 @@ root=,blue
 #BOARD=RZG2L_21MMSQ_DEV
 #BOARD=RZG2LC_SMARC
 #BOARD=RZG2LC_DEV
+#BOARD=RZV2LC_SMARC
+#BOARD=RZV2L_SMARC_PMIC
 
 ################################
 # Makefile options
@@ -46,14 +48,17 @@ read_setting
 
 do_board_menu() {
   SELECT=$(whiptail --title "Board Selection" --menu "You may use ESC+ESC to cancel." 0 0 0 \
-	"1  HIHOPE" "HiHope RZ/G2M, RZ/G2N, RZ/G2H" \
-	"2  EK874" "Silicon Linux RZ/G2E" \
-	"3  RZG2L_SMARC" "Renesas SMARC RZ/G2L" \
-	"4  RZG2L_SMARC_PMIC" "Renesas SMARC RZ/G2L (PMIC Version)" \
-	"5  RZG2LC_SMARC" "Renesas SMARC RZ/G2LC" \
-	"6  RZG2L_15MMSQ_DEV" "Renesas Internal Dev Board" \
-	"7  RZG2L_21MMSQ_DEV" "Renesas Internal Dev Board" \
-	"8  RZG2LC_DEV" "Renesas Internal Dev Board" \
+	"1   HIHOPE" "HiHope RZ/G2M, RZ/G2N, RZ/G2H" \
+	"2   EK874" "Silicon Linux RZ/G2E" \
+	"3   RZG2L_SMARC" "Renesas SMARC RZ/G2L" \
+	"4   RZG2L_SMARC_PMIC" "Renesas SMARC RZ/G2L (PMIC Version)" \
+	"5   RZG2LC_SMARC" "Renesas SMARC RZ/G2LC" \
+	"6   RZG2L_15MMSQ_DEV" "Renesas Internal Dev Board" \
+	"7   RZG2L_21MMSQ_DEV" "Renesas Internal Dev Board" \
+	"8   RZG2LC_DEV" "Renesas Internal Dev Board" \
+	"9   RZV2L_SMARC" "Renesas SMARC RZ/V2L" \
+	"10  RZV2L_SMARC_PMIC" "Renesas SMARC RZ/V2L (PMIC Version)" \
+	"11  RZV2L_15MMSQ_DEV" "Renesas Internal Dev Board" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -66,6 +71,9 @@ do_board_menu() {
       6\ *) FW_BOARD=RZG2L_15MMSQ_DEV ;;
       7\ *) FW_BOARD=RZG2L_21MMSQ_DEV ;;
       8\ *) FW_BOARD=RZG2LC_DEV ;;
+      9\ *) FW_BOARD=RZV2L_SMARC ;;
+      10\ *) FW_BOARD=RZV2LC_SMARC_PMIC ;;
+      11\ *) FW_BOARD=RZV2L_15MMSQ_DEV ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
   fi
@@ -165,6 +173,8 @@ if [ "$1" == "" ] ; then
       RZG2L_15MMSQ_DEV) OUTFILE=Flash_Writer_SCIF_RZG2L_15MMSQ_DEV_DDR4_4GB.mot ;;
       RZG2L_21MMSQ_DEV) OUTFILE=Flash_Writer_SCIF_RZG2L_21MMSQ_DEV_DDR4_4GB.mot ;;
       RZG2LC_DEV) OUTFILE=Flash_Writer_SCIF_RZG2LC_DEV_DDR3L_1GB.mot ;;
+      RZV2L_SMARC) OUTFILE=Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot ;;
+      RZV2L_SMARC_PMIC) OUTFILE=Flash_Writer_SCIF_RZV2L_SMARC_PMIC_DDR4_2GB_1PCS.mot ;;
       *) OUTFILE="*.mot" ;;
     esac
 
