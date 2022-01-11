@@ -235,9 +235,11 @@ set_filenames() {
 	fi
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzv2l" ]; then
 		if [ "$BOARD_VERSION" == "PMIC" ] ; then
-			FLASHWRITER="./binaries/Flash_Writer_SCIF_RZV2L_SMARC_PMIC_DDR4_2GB_1PCS.mot"
+			FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZV2L_SMARC_PMIC_DDR4_2GB_1PCS.mot"
+			BL2_FILE=$FILES_DIR/bl2_bp-${BOARD}_pmic.srec
+			FIP_FILE=$FILES_DIR/fip-${BOARD}_pmic.srec
 		else
-			FLASHWRITER="./binaries/Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot"
+			FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot"
 		fi
 	fi
 
