@@ -83,4 +83,34 @@ save_setting() {
   sort -o $SETTINGS_FILE $SETTINGS_FILE
 }
 
+# Check for required Host packages
+# If a package is missing, then kill the script (exit)
+check_packages() {
 
+  MISSING_A_PACKAGE=0
+  PACKAGE_LIST=(git make gcc g++ python bison flex)
+
+  for i in ${PACKAGE_LIST[@]} ; do
+    CHECK=$(which $i)
+    if [ "$CHECK" == "" ] ; then
+      echo "ERROR: Missing host package: $i"
+      MISSING_A_PACKAGE=1
+    fi
+  done
+  CHECK=$(dpkg -l 'libncurses5-dev' | grep '^ii')
+  if [ "$CHECK" == "" ] ; then
+    MISSING_A_PACKAGE=1
+  fi
+
+  if [ "$MISSING_A_PACKAGE" != "0" ] ; then
+    echo "ERROR: Missing mandatory host packages"
+    echo "Please make sure the following packages are installed on your machine."
+    echo "    ${PACKAGE_LIST[@]} libncurses5-dev libncursesw5-dev"
+    echo ""
+    echo "The following command line will ensure all packages are installed."
+    echo ""
+    echo "   sudo apt-get install ${PACKAGE_LIST[@]} libncurses5-dev libncursesw5-dev"
+    echo ""
+    exit 1
+  fi
+}

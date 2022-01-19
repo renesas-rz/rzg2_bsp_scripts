@@ -189,6 +189,9 @@ fi
 
 if [ "$1" == "s" ] ; then
 
+  # Check for required Host packages
+  check_packages
+
   SELECT=$(whiptail --title "Board Selection" --menu "You may use ESC+ESC to cancel." 0 0 0 \
 	"1  hihope-rzg2m" "HiHope RZ/G2M" \
 	"2  hihope-rzg2n" "HiHope RZ/G2N" \
