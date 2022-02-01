@@ -57,12 +57,22 @@ fi
 
 # Help Menu
 if [ "$1" == "" ] ; then
-  echo "Options:"
-#  echo "./build.sh make_config              # Create a defconfig based on what you need to enable"
-  echo "./build.sh defconfig                # Configure the kernel"
-  echo "./build.sh _all                     # build the kernel and device tree"
-  echo "./build.sh dtbs                     # build the Device Trees"
-#  echo "./build.sh deploy                   # copy all the output files to $DEPLOY_DIR"
+  echo "Standard kernel Make Command Options:"
+  echo "defconfig                # Configure the kernel (Must do first before you can build)"
+  echo "_all                     # Build the kernel and Device Trees"
+  echo "dtbs                     # Build the Device Trees"
+  echo "menuconfig               # Kernel Configuration Tool"
+  echo "clean                    # make clean"
+  echo ""
+  echo ""
+  echo "Special Renesas Command Options:"
+#  echo "make_config              # Create a defconfig based on what you need to enable"
+  echo "./build.sh deploy                   # copy all the output files to $DEPLOY_DIR"
+  echo ""
+  echo "Example build:"
+  echo "  $ ./build.sh k defconfig"
+  echo "  $ ./build.sh k _all"
+  echo "  $ ./build.sh k deploy"
   exit
 fi
 
@@ -243,27 +253,42 @@ if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZG2L" ] ; then
 
   mkdir -p $DEPLOY_DIR
   mkdir -p $DEPLOY_DIR/modules
-
   mkdir -p $DEPLOY_DIR/$MACHINE
 
   # Kernel (rename to match Yocto output...but it's all the same kernel)
-  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR
-  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/${MACHINE}/Image-${MACHINE}.bin
+  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE
+  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE/Image-${MACHINE}.bin
 
-  #Device Trees
-  cp -v $OUT/arch/arm64/boot/dts/renesas/r9a*.dtb $DEPLOY_DIR
+  # Device Trees
+  case "$MACHINE" in
+  "smarc-rzg2l")
+    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a07g044l2-smarc.dtb $DEPLOY_DIR/$MACHINE
+    ;;
+  "smarc-rzg2lc")
+    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a07g044c2-smarc.dtb $DEPLOY_DIR/$MACHINE
+    ;;
+  *)
+    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a*.dtb $DEPLOY_DIR/$MACHINE
+    ;;
+  esac
 
   # Modules
   mkdir -p $DEPLOY_DIR/modules
   make O=$OUT INSTALL_MOD_PATH=../$DEPLOY_DIR/modules/ modules_install
 
-  # Firmware files
+  # Firmware files (like for WiFi)
   mkdir -p $DEPLOY_DIR/firmware
   cp -v firmware/*  $DEPLOY_DIR/firmware
 
+  # Copy to output directory
+  #if [ "$OUT_DIR" != "" ] ; then
+  #  mkdir -p ../$OUT_DIR
+  #  cp -v $DEPLOY_DIR/$MACHINE/* ../$OUT_DIR
+  #  echo -e "Files copied to $OUT_DIR"
+  #fi
+
   exit
 fi
-
 
 
 
