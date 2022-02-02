@@ -202,18 +202,16 @@ create_fip_and_copy() {
   make PLAT=${PLATFORM}
   cd ../..
 
+  EXTRA=""
+
   # RZ/G2L PMIC board have _pmic at the end of the filename
   if [ "$MACHINE" == "smarc-rzg2l" ] && [ "$BOARD_VERSION" == "PMIC" ] ; then
     EXTRA="_pmic"
-  else
-    EXTRA=""
   fi
 
   # RZ/V2L PMIC board have _pmic at the end of the filename
   if [ "$MACHINE" == "smarc-rzv2l" ] && [ "$BOARD_VERSION" == "PMIC" ] ; then
     EXTRA="_pmic"
-  else
-    EXTRA=""
   fi
 
   echo -e "[Create fip.bin]"
