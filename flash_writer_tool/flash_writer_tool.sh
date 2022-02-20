@@ -600,7 +600,7 @@ do_menu_file_fw() {
 
 do_menu_file_sa0() {
   SELECT=$(whiptail --title "SA0 File Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter file path to SA0 File." 0 100 \
-	"bootparam_sa0.srec"  \
+	"${SA0_FILE}"  \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -610,7 +610,7 @@ do_menu_file_sa0() {
 
 do_menu_file_bl2() {
   SELECT=$(whiptail --title "BL2 File Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter file path to BL2 File." 0 100 \
-	"bl2-${BOARD}.srec"  \
+	"${BL2_FILE}"  \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -620,7 +620,7 @@ do_menu_file_bl2() {
 
 do_menu_file_sa6() {
   SELECT=$(whiptail --title "SA6 File Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter file path to SA6 File." 0 100 \
-	"cert_header_sa6.srec"  \
+	"${SA6_FILE}"  \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -630,7 +630,7 @@ do_menu_file_sa6() {
 
 do_menu_file_bl31() {
   SELECT=$(whiptail --title "BL31 File Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter file path to BL31 File." 0 100 \
-	"bl31-${BOARD}.srec"  \
+	"${BL31_FILE}"  \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -640,7 +640,7 @@ do_menu_file_bl31() {
 
 do_menu_file_fip() {
   SELECT=$(whiptail --title "FIP File Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter file path to FIP File." 0 100 \
-	"fip-${BOARD}.srec"  \
+	"${FIP_FILE}"  \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -650,7 +650,7 @@ do_menu_file_fip() {
 
 do_menu_file_uboot() {
   SELECT=$(whiptail --title "u-boot File Selection" --inputbox "You may use ESC+ESC to cancel.\n\n Enter file path to u-boot File." 0 100 \
-	"u-boot-elf-${BOARD}.srec"  \
+	"${UBOOT_FILE}"  \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
