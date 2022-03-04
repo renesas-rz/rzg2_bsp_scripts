@@ -102,10 +102,16 @@ check_packages() {
     MISSING_A_PACKAGE=1
   fi
 
+  # File /usr/include/openssl/sha.h is required to build Trusted Firmware-A
+  CHECK=$(dpkg -l 'libssl-dev' | grep '^ii')
+  if [ "$CHECK" == "" ] ; then
+    MISSING_A_PACKAGE=1
+  fi
+
   if [ "$MISSING_A_PACKAGE" != "0" ] ; then
     echo "ERROR: Missing mandatory host packages"
     echo "Please make sure the following packages are installed on your machine."
-    echo "    ${PACKAGE_LIST[@]} libncurses5-dev libncursesw5-dev"
+    echo "    ${PACKAGE_LIST[@]} libncurses5-dev libncursesw5-dev libssl-dev"
     echo ""
     echo "The following command line will ensure all packages are installed."
     echo ""
