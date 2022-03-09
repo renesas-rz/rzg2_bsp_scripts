@@ -16,7 +16,7 @@ Branches:
 	$ cd rzg2_flash_writer ; git checkout rz_g2l ; cd ..
 
   RZ/V2L:
-	(none)
+	$ cd rzg2_flash_writer ; git checkout rz_g2l ; cd ..
 
   RZ/V2M:
 	$ cd rzg2_flash_writer ; git checkout rz_v2m ; cd ..
