@@ -244,10 +244,10 @@ set_filenames() {
 	fi
 
 	if [ "$BL2_FILE" == "" ] ; then
-		BL2_FILE=$FILES_DIR/bl2_bp-${BOARD}.srec
+		BL2_FILE=$FILES_DIR/bl2_bp-${BOARD}.bin
 	fi
 	if [ "$FIP_FILE" == "" ] ; then
-		FIP_FILE=$FILES_DIR/fip-${BOARD}.srec
+		FIP_FILE=$FILES_DIR/fip-${BOARD}.bin
 	fi
 
 	# Clear file settings we do not use
