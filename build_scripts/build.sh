@@ -148,9 +148,13 @@ fi
 #----------------------------------------------
 if [ "$1" == "" ] ; then
 
+  if [ "$BOARD_VERSION" != "" ] ; then
+    BOARD_VERSION_TEXT="($BOARD_VERSION)"
+  fi
+
   echo "\
 
-Board: $MACHINE
+Board: $MACHINE $BOARD_VERSION_TEXT
 
 Please select what you want to build:
 
