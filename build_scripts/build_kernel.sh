@@ -34,6 +34,7 @@ if [ "$MACHINE" == "hihope-rzg2h" ] ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG
 if [ "$MACHINE" == "ek874" ]        ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG2" ; fi
 if [ "$MACHINE" == "smarc-rzg2l" ]  ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG2L" ; fi
 if [ "$MACHINE" == "smarc-rzg2lc" ] ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG2L" ; fi
+if [ "$MACHINE" == "smarc-rzv2l" ]  ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZV2L" ; fi
 
 
 do_toolchain_menu() {
@@ -289,6 +290,45 @@ if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZG2L" ] ; then
 
   exit
 fi
+
+if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZV2L" ] ; then
+
+  mkdir -p $DEPLOY_DIR
+  mkdir -p $DEPLOY_DIR/modules
+  mkdir -p $DEPLOY_DIR/$MACHINE
+
+  # Kernel (rename to match Yocto output...but it's all the same kernel)
+  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE
+  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE/Image-${MACHINE}.bin
+
+  # Device Trees
+  case "$MACHINE" in
+  "smarc-rzv2l")
+    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dtb $DEPLOY_DIR/$MACHINE
+    ;;
+  *)
+    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a*.dtb $DEPLOY_DIR/$MACHINE
+    ;;
+  esac
+
+  # Modules
+  mkdir -p $DEPLOY_DIR/modules
+  make O=$OUT INSTALL_MOD_PATH=../$DEPLOY_DIR/modules/ modules_install
+
+  # Firmware files (like for WiFi)
+  mkdir -p $DEPLOY_DIR/firmware
+  cp -v firmware/*  $DEPLOY_DIR/firmware
+
+  # Copy to output directory
+  #if [ "$OUT_DIR" != "" ] ; then
+  #  mkdir -p ../$OUT_DIR
+  #  cp -v $DEPLOY_DIR/$MACHINE/* ../$OUT_DIR
+  #  echo -e "Files copied to $OUT_DIR"
+  #fi
+
+  exit
+fi
+
 
 
 
