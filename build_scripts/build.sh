@@ -38,7 +38,7 @@ KERNEL_DIR_DEFAULT=rz_linux-cip
 OUT_DIR=output_${MACHINE}
 
 # Read in functions from build_common.sh
-if [ ! -e build_common.sh ] ; then 
+if [ ! -e build_common.sh ] ; then
   echo -e "\n ERROR: File \"build_common.sh\" not found\n."
   exit
 else
@@ -49,7 +49,7 @@ fi
 # Toolchain Selection GUI
 # Since each sub-script will want to ask the user what toolchain to use, we will keep a common interface in this file.
 if [ "$1" == "toolchain_select" ] ; then
-  
+
     SELECT=$(whiptail --title "Toolchain setup" --menu "You may use ESC+ESC to cancel.\nEnter the command line you want to run before build.\n" 0 0 0 \
 	"1  SDK Toolchain (Rocko/Poky 2.4.3)" "  /opt/poky/2.4.3/environment-setup-aarch64-poky-linux" \
 	"2  Linaro gcc-linaro-7.5.0-2019.12" "  /opt/linaro/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu" \
@@ -74,7 +74,7 @@ if [ "$1" == "toolchain_select" ] ; then
   # Save our replies to some tmp file so other scripts can read it
   echo "x_TOOLCHAIN_SETUP_NAME=\"$x_TOOLCHAIN_SETUP_NAME\"" > /tmp/toolchain_reply.txt
   echo "x_TOOLCHAIN_SETUP=\"$x_TOOLCHAIN_SETUP\"" >> /tmp/toolchain_reply.txt
-  
+
   exit
 fi
 
