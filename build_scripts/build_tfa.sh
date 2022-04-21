@@ -59,6 +59,21 @@ if [ "$TFA_FIP" == "" ] ; then
 fi
 
 
+###############################
+# Trusted Firmware Version
+##############################
+
+# Get version number from Makefile
+TFA_VERSION_MAJOR=`grep "^VERSION_MAJOR" $TFA_DIR/Makefile | awk '{print $3}'`
+TFA_VERSION_MINOR=`grep "^VERSION_MINOR" $TFA_DIR/Makefile | awk '{print $3}'`
+TFA_VERSION="$TFA_VERSION_MAJOR.$TFA_VERSION_MINOR"
+#echo TFA_VERSION=$TFA_VERSION
+
+# Some setting names switched from RZG_xx to RCAR_xxx after the code mainlined for release 2.5 since the
+# same code alrady exists for R-Car in mainline, so they just used the same names
+if [ "$TFA_VERSION" \< "2.5" ] ; then
+  TFA_BEFORE_2_5="1"
+fi
 
 ###############################
 # Text strings
@@ -435,16 +450,16 @@ fi
 # ECC and video decompression settings
 if [ "$TFA_ECC_FULL" != "0" ] ; then
   G2E_ECC="LIFEC_DBSC_PROTECT_ENABLE=0 RZG_DRAM_ECC=1"
-  G2M_ECC="LIFEC_DBSC_PROTECT_ENABLE=0 RZG_DRAM_SPLIT=0 RZG_DRAM_ECC=1"
+  G2M_ECC="LIFEC_DBSC_PROTECT_ENABLE=0 RCAR_DRAM_SPLIT=0 RZG_DRAM_ECC=1"
   G2N_ECC="LIFEC_DBSC_PROTECT_ENABLE=0 RZG_DRAM_ECC=1"
-  G2H_ECC="LIFEC_DBSC_PROTECT_ENABLE=0 RZG_DRAM_SPLIT=0 RZG_DRAM_ECC=1"
+  G2H_ECC="LIFEC_DBSC_PROTECT_ENABLE=0 RCAR_DRAM_SPLIT=0 RZG_DRAM_ECC=1"
 else
   # If ECC is not set, we will assume that we want to reserve a
   # Lossy Decompression area for multimedia.
   G2E_LOSSY=""   # not needed for RZ/G2E
-  G2M_LOSSY="RZG_LOSSY_ENABLE=1"
-  G2N_LOSSY="RZG_LOSSY_ENABLE=1"
-  G2H_LOSSY="RZG_LOSSY_ENABLE=1"
+  G2M_LOSSY="RCAR_LOSSY_ENABLE=1"
+  G2N_LOSSY="RCAR_LOSSY_ENABLE=1"
+  G2H_LOSSY="RCAR_LOSSY_ENABLE=1"
 fi
 
 # Board Settings
@@ -511,42 +526,42 @@ case "$MACHINE" in
     ;;
 
   "ek874")
-    TFA_OPT="LSI=G2E RZG_SA0_SIZE=0 RZG_DRAM_DDR3L_MEMCONF=1 RZG_DRAM_DDR3L_MEMDUAL=1 SPD="none" $G2E_ECC $G2E_LOSSY"
+    TFA_OPT="LSI=G2E RCAR_DRAM_DDR3L_MEMCONF=1 RCAR_DRAM_DDR3L_MEMDUAL=1 SPD="none" $G2E_ECC $G2E_LOSSY"
 
-    # Common Settings
-    TFA_OPT="$TFA_OPT RZG_RPC_HYPERFLASH_LOCKED=0"
+    # Common Settings for RZ/G2E
+    TFA_OPT="$TFA_OPT RCAR_SA0_SIZE=0 RCAR_RPC_HYPERFLASH_LOCKED=0"
     PLATFORM=rzg
     TOOL=rzg
     ;;
   "hihope-rzg2m")
     TFA_OPT="LSI=G2M RZG_DRAM_SPLIT=2 SPD="none" $G2M_ECC $G2M_LOSSY"
 
-    # Common Settings
-    TFA_OPT="$TFA_OPT RZG_RPC_HYPERFLASH_LOCKED=0"
+    # Common Settings for RZ/G2M
+    TFA_OPT="$TFA_OPT RCAR_RPC_HYPERFLASH_LOCKED=0"
     PLATFORM=rzg
     TOOL=rzg
     ;;
   "hihope-rzg2n")
     TFA_OPT="LSI=G2N SPD="none" $G2N_ECC $G2N_LOSSY"
 
-    # Common Settings
-    TFA_OPT="$TFA_OPT RZG_RPC_HYPERFLASH_LOCKED=0"
+    # Common Settings for RZ/G2N
+    TFA_OPT="$TFA_OPT RCAR_RPC_HYPERFLASH_LOCKED=0"
     PLATFORM=rzg
     TOOL=rzg
     ;;
   "hihope-rzg2h")
-    TFA_OPT="LSI=G2H RZG_DRAM_SPLIT=2 RZG_DRAM_LPDDR4_MEMCONF=1 RZG_DRAM_CHANNEL=5 SPD="none" $G2H_ECC $G2H_LOSSY"
+    TFA_OPT="LSI=G2H RZG_DRAM_SPLIT=2 RZG_DRAM_LPDDR4_MEMCONF=1 RCAR_DRAM_CHANNEL=5 SPD="none" $G2H_ECC $G2H_LOSSY"
 
-    # Common Settings
-    TFA_OPT="$TFA_OPT RZG_RPC_HYPERFLASH_LOCKED=0"
+    # Common Settings for RZ/G2H
+    TFA_OPT="$TFA_OPT RCAR_RPC_HYPERFLASH_LOCKED=0"
     PLATFORM=rzg
     TOOL=rzg
     ;;
 esac
 
-# For eMMC boot, you need to set RZG_SA6_TYPE=1
+# For eMMC boot, you need to set RCAR_SA6_TYPE=1
 if [ "$TFA_BOOT" == "1" ] ; then
-  TFA_OPT="$TFA_OPT RZG_SA6_TYPE=1"
+    TFA_OPT="$TFA_OPT RCAR_SA6_TYPE=1"
 fi
 
 # MBED is required for VLP v1.0.5+
@@ -559,6 +574,38 @@ if [ "$PLATFORM" == "rzg" ] &&  [ "$MBEDTLS_DIR" == "" ] ; then
     echo "ERROR: You need to have the mbed TLS repo to build"
     exit
   fi
+fi
+
+# For versions before v2.5, RZG_ was used for some settings instead of RCAR_
+if [ "${TFA_BEFORE_2_5}" ] ; then
+
+  # RCAR_SA6_TYPE -> RZG_SA6_TYPE
+  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_SA6_TYPE/RZG_SA6_TYPE/')
+  TFA_OPT="$TFA_OPT_NEW"
+
+  # RCAR_SA0_SIZE -> RZG_SA0_SIZE
+  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_SA0_SIZE/RZG_SA0_SIZE/')
+  TFA_OPT="$TFA_OPT_NEW"
+
+  # RCAR_DRAM_DDR3L_MEMCONF -> RZG_DRAM_DDR3L_MEMCONF
+  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_DRAM_DDR3L_MEMCONF/RZG_DRAM_DDR3L_MEMCONF/')
+  TFA_OPT="$TFA_OPT_NEW"
+
+  # RCAR_DRAM_DDR3L_MEMDUAL -> RZG_DRAM_DDR3L_MEMDUAL
+  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_DRAM_DDR3L_MEMDUAL/RZG_DRAM_DDR3L_MEMDUAL/')
+  TFA_OPT="$TFA_OPT_NEW"
+
+  # RCAR_DRAM_SPLIT -> RZG_DRAM_SPLIT
+  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_DRAM_SPLIT/RZG_DRAM_SPLIT/')
+  TFA_OPT="$TFA_OPT_NEW"
+
+  # RCAR_DRAM_CHANNEL -> RZG_DRAM_CHANNEL
+  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_DRAM_CHANNEL/RZG_DRAM_CHANNEL/')
+  TFA_OPT="$TFA_OPT_NEW"
+
+  # RCAR_RPC_HYPERFLASH_LOCKED -> RZG_RPC_HYPERFLASH_LOCKED
+  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_RPC_HYPERFLASH_LOCKED/RZG_RPC_HYPERFLASH_LOCKED/')
+  TFA_OPT="$TFA_OPT_NEW"
 fi
 
 # Set up Toolchain in current environment
