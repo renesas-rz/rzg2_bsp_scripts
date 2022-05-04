@@ -24,6 +24,7 @@
 # MACHINE=smarc-rzg2l	# Renesas RZ/G2L EVK
 #   BOARD_VERSION: DISCRETE, PMIC, WS1
 # MACHINE=smarc-rzg2lc	# Renesas RZ/G2LC EVK
+# MACHINE=smarc-rzg2ul	# Renesas RZ/G2UL EVK
 # MACHINE=smarc-rzv2l	# Renesas RZ/V2L EVK
 #   BOARD_VERSION: DISCRETE, PMIC
 
