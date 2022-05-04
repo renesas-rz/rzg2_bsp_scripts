@@ -9,7 +9,7 @@ This repository contains helpful scripts to be used with the official Renesas BS
 
 ## Install
 To install, please place this repository as a directory named 'scripts' under the yocto BSP directory.<br>
-For example, we will us the VLP64 v1.0.8 BSP (rzg2\_bsp\_eva\_v108.tar.gz) that can be downloaded from renesas.com
+For example, we will use the VLP64 v1.0.8 BSP (rzg2\_bsp\_eva\_v108.tar.gz) that can be downloaded from renesas.com
 <pre>
 $ mkdir rzg2_bsp_eva_v108
 $ tar xf rzg2_bsp_eva_v108.tar.gz -C rzg2_bsp_eva_v108
