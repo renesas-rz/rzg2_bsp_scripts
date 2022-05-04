@@ -12,6 +12,7 @@
 #MACHINE=smarc-rzg2l    # Renesas SMARC RZ/G2L
 #MACHINE=smarc-rzg2lc   # Renesas SMARC RZ/G2LC
 #MACHINE=smarc-rzv2l    # Renesas SMARC RZ/V2L
+#MACHINE=smarc-rzg2ul   # Renesas SMARC RZ/G2UL
 
 # Read in functions from build_common.sh
 if [ ! -e build_common.sh ] ; then
@@ -30,7 +31,8 @@ if [ "$MACHINE" == "hihope-rzg2n" ] ; then DEFCONFIG=r8a774b1_hihope-rzg2n_defco
 if [ "$MACHINE" == "hihope-rzg2h" ] ; then DEFCONFIG=r8a774e1_hihope-rzg2h_defconfig ; fi
 if [ "$MACHINE" == "ek874" ] ; then DEFCONFIG=r8a774c0_ek874_defconfig ; fi
 if [ "$MACHINE" == "smarc-rzg2l" ] ; then DEFCONFIG=smarc-rzg2l_defconfig ; fi
-if [ "$MACHINE" == "smarc-rzg2lc" ] ; then DEFCONFIG=smarc-rzg2l_defconfig ; fi
+if [ "$MACHINE" == "smarc-rzg2lc" ] ; then DEFCONFIG=smarc-rzg2lc_defconfig ; fi
+if [ "$MACHINE" == "smarc-rzg2ul" ] ; then DEFCONFIG=smarc-rzg2ul_defconfig ; fi
 if [ "$MACHINE" == "smarc-rzv2l" ] ; then DEFCONFIG=smarc-rzv2l_defconfig ; fi
 
 # Set the output directory (because I like all my build files separate from the source code)

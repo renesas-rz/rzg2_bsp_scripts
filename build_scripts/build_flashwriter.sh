@@ -15,6 +15,7 @@ root=,blue
 #BOARD=RZG2L_15MMSQ_DEV
 #BOARD=RZG2L_21MMSQ_DEV
 #BOARD=RZG2LC_SMARC
+#BOARD=RZG2UL_SMARC
 #BOARD=RZG2LC_DEV
 #BOARD=RZV2LC_SMARC
 #BOARD=RZV2L_SMARC_PMIC
@@ -59,6 +60,7 @@ do_board_menu() {
 	"9   RZV2L_SMARC" "Renesas SMARC RZ/V2L" \
 	"10  RZV2L_SMARC_PMIC" "Renesas SMARC RZ/V2L (PMIC Version)" \
 	"11  RZV2L_15MMSQ_DEV" "Renesas Internal Dev Board" \
+	"12  RZG2UL_SMARC" "Renesas SMARC RZ/G2UL" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -74,6 +76,7 @@ do_board_menu() {
       9\ *) FW_BOARD=RZV2L_SMARC ;;
       10\ *) FW_BOARD=RZV2LC_SMARC_PMIC ;;
       11\ *) FW_BOARD=RZV2L_15MMSQ_DEV ;;
+      12\ *) FW_BOARD=RZG2UL_SMARC ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
   fi
