@@ -96,21 +96,28 @@ let FAT_START*=512
 EXT_START=$(fdisk -l $OUTFILE | grep "83 Linux" | awk '{print $2}')
 let EXT_START*=512
 
-# Loop mount our FAT16 partition.
-message "Loop mount and format at FAT16"
+if [[ ("$BS_SIZE" == "1M" && "$COUNT" > 4096 ) || ( "$BS_SIZE" == "1MB" && "$COUNT" > 4295 ) ]] ; then
+	FAT_FORMAT=32;
+else
+	FAT_FORMAT=16;
+fi
+
+# Loop mount our FAT partition.
+message "Loop mount and format at FAT${FAT_FORMAT}"
 sudo losetup -v -f -o $FAT_START  $OUTFILE
 
 # Find out our loop device name
 LOOP_DEVICE=$(losetup --list | grep $OUTFILE | awk '{print $1}');
 
-# format as FAT16
-sudo mkfs.vfat -F 16 -n $FAT_LABEL $LOOP_DEVICE
+# format as FAT16 or FAT32
+sudo mkfs.vfat -F ${FAT_FORMAT} -n $FAT_LABEL $LOOP_DEVICE
+
 
 # mount this loop device (partition) so we can copy files into it
-mkdir -p ${TMP}/loop_mount/fat16
-sudo mount $LOOP_DEVICE ${TMP}/loop_mount/fat16
-sudo cp -r $FAT_FILES/* ${TMP}/loop_mount/fat16
-sudo umount  ${TMP}/loop_mount/fat16
+mkdir -p ${TMP}/loop_mount/fat
+sudo mount $LOOP_DEVICE ${TMP}/loop_mount/fat
+sudo cp -r $FAT_FILES/* ${TMP}/loop_mount/fat
+sudo umount  ${TMP}/loop_mount/fat
 
 # Release the loop device
 sudo losetup -d $LOOP_DEVICE
