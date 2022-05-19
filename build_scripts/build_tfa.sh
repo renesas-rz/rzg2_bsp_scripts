@@ -514,7 +514,7 @@ case "$MACHINE" in
 
   "smarc-rzg2ul")
     PLATFORM=g2ul
-    TFA_OPT="BOARD=g2ul_smarc"
+    TFA_OPT="BOARD=g2ul_smarc SOC_TYPE=1 SPI_FLASH=AT25QL128A"
 
     TOOL=
     ;;
