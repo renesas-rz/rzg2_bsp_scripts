@@ -204,8 +204,8 @@ if [ "$1" == "s" ] ; then
 	"4  ek874" "Silicon Linux RZ/G2E" \
 	"5  smarc-rzg2l" "Renesas SMARC RZ/G2L" \
 	"6  smarc-rzg2lc" "Renesas SMARC RZ/G2LC" \
-	"7  smarc-rzv2l" "Renesas SMARC RZ/V2L" \
-	"8  smarc-rzg2ul" "Renesas SMARC RZ/G2UL" \
+	"7  smarc-rzg2ul" "Renesas SMARC RZ/G2UL" \
+	"8  smarc-rzv2l" "Renesas SMARC RZ/V2L" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -226,8 +226,8 @@ if [ "$1" == "s" ] ; then
 	fi
       ;;
       6\ *) FW_BOARD=RZG2LC_SMARC ; MACHINE=smarc-rzg2lc ;;
-      7\ *) FW_BOARD=RZV2L_SMARC ; MACHINE=smarc-rzv2l ;;
-      8\ *) FW_BOARD=RZG2UL_SMARC ; MACHINE=smarc-rzg2ul
+      7\ *) FW_BOARD=RZG2UL_SMARC ; MACHINE=smarc-rzg2ul ;;
+      8\ *) FW_BOARD=RZV2L_SMARC ; MACHINE=smarc-rzv2l
 	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?\n\nThe PMIC version has \"Reneas\" printed in the middle of the SOM board.\nThe Discrete version has \"Renesas\" printed at the edge of the SOM baord.   " 0 0 0
 	if [ "$?" == "0" ] ; then
 		BOARD_VERSION="PMIC"
