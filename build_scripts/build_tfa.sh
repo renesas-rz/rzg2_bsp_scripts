@@ -11,6 +11,7 @@
 # MACHINE=smarc-rzg2l
 #   BOARD_VERSION: DISCRETE, PMIC, WS1
 # MACHINE=smarc-rzg2lc
+# MACHINE=smarc-rzg2ul
 # MACHINE=smarc-rzgvl
 #   BOARD_VERSION: DISCRETE, PMIC
 
@@ -51,7 +52,7 @@ if [ "$TFA_DEBUG" == "" ] ; then
 fi
 if [ "$TFA_FIP" == "" ] ; then
 
-  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] || [ "$MACHINE" == "smarc-rzv2l" ] ; then
+  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] || [ "$MACHINE" == "smarc-rzv2l" ] || [ "$MACHINE" == "smarc-rzg2ul" ]; then
     TFA_FIP=1
   else
     TFA_FIP=0
@@ -507,6 +508,13 @@ case "$MACHINE" in
   "smarc-rzg2lc")
     PLATFORM=g2l
     TFA_OPT="BOARD=smarc_1"
+
+    TOOL=
+    ;;
+
+  "smarc-rzg2ul")
+    PLATFORM=g2ul
+    TFA_OPT="BOARD=g2ul_smarc"
 
     TOOL=
     ;;

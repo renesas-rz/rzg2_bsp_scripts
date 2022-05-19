@@ -6,48 +6,49 @@
 
 <h1>RZ/G2 BSP Scripts</h1><hr>
 
-<p>This repository contains helpful scripts to be used with the official Renesas BSP</p>
-
-<h2>Supported BSP versions</h2><hr>
-
-<ul>
-<li>VLP64 v1.0.8</li>
-<li>VLP64 v1.0.9-RT</li>
-<li>VLP64 v1.0.10</li>
-</ul>
+<p>This repository contains helpful scripts to be used with the official Renesas BSPs.</p>
 
 <h2>Install</h2><hr>
 
-<p>To install, please place this repository as a directory named 'scripts' under the yocto BSP directory.<br>
-For example, we will us the VLP64 v1.0.8 BSP (rzg2_bsp_eva_v108.tar.gz) that can be downloaded from renesas.com</p>
+<p>To install, clone this repository under your Yocto BSP directory.
+This is helpful for scripts like flash<em>writer</em>tool to automatically find the output binary files it needs for programming.</p>
 
 <pre style="background-color: #F6F8FA">
-$ mkdir rzg2_bsp_eva_v108
-$ tar xf rzg2_bsp_eva_v108.tar.gz -C rzg2_bsp_eva_v108
-$ cd rzg2_bsp_eva_v108
-$ git clone https://github.com/renesas-rz/rzg2_bsp_scripts  scripts
+$ cd /home/xxx/rzg2_bsp_v3.0.0
+$ git clone https://github.com/renesas-rz/rzg2_bsp_scripts
 </pre>
 
-<h2>Setup and Configure the Yocto BSP</h2><hr>
+<h2>What is included:</h2><hr>
 
-<p>Below is an example of how to configure your yocto BSP before building the first time.<br>
-Please note that this is intended to only be done once. If you need to change the configuration
-after building, please edit the local.conf file directly.</p>
+<h3>build_scripts</h3>
 
-<pre style="background-color: #F6F8FA">
-$ scripts/yocto_setup/setup.sh
-</pre>
+<ul>
+<li>Scripts that allow you to build BSP software components outside of the Yocto build environment.</li>
+</ul>
 
-<p>In the GUI menu, choose your board and then select "Save" to start the setup and configuration.</p>
+<h3>docker_setup</h3>
 
-<p>After complete, you can build your Yocto BSP.<br></p>
+<ul>
+<li>Instructions for setting up a docker container for build BSP images. Some BSPs required older versions of Ubuntu which you could use a docker container running in any version of Ubuntu.</li>
+</ul>
 
-<pre style="background-color: #F6F8FA">
-$ source poky/oe-init-build-env
-$ bitbake core-image-qt
-</pre>
+<h3>flash_writer_tool</h3>
 
-<p>Please refer to the BSP 'Release Note' for more details on building and advanced configurations.</p>
+<ul>
+<li>A graphical front end for the flash writer programming utility</li>
+</ul>
+
+<h3>image_creator</h3>
+
+<ul>
+<li>A script that will create a complete image file (sd_card.img) that can be programmed into an SD Card, eMMC or USB Flash drive.</li>
+</ul>
+
+<h3>usb_sd_partition</h3>
+
+<ul>
+<li>A SD Card &amp; USB Flash Drive Partitioning Script</li>
+</ul>
 
 </BODY>
 </HTML>

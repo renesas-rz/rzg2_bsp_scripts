@@ -1,35 +1,29 @@
 # RZ/G2 BSP Scripts
 
-This repository contains helpful scripts to be used with the official Renesas BSP
-
-## Supported BSP versions
-* VLP64 v1.0.8
-* VLP64 v1.0.9-RT
-* VLP64 v1.0.10
+This repository contains helpful scripts to be used with the official Renesas BSPs.
 
 ## Install
-To install, please place this repository as a directory named 'scripts' under the yocto BSP directory.<br>
-For example, we will us the VLP64 v1.0.8 BSP (rzg2\_bsp\_eva\_v108.tar.gz) that can be downloaded from renesas.com
+To install, clone this repository under your Yocto BSP directory.
+This is helpful for scripts like flash_writer_tool to automatically find the output binary files it needs for programming.
+
 <pre>
-$ mkdir rzg2_bsp_eva_v108
-$ tar xf rzg2_bsp_eva_v108.tar.gz -C rzg2_bsp_eva_v108
-$ cd rzg2_bsp_eva_v108
-$ git clone https://github.com/renesas-rz/rzg2_bsp_scripts  scripts
+$ cd /home/xxx/rzg2_bsp_v3.0.0
+$ git clone https://github.com/renesas-rz/rzg2_bsp_scripts
 </pre>
 
-## Setup and Configure the Yocto BSP
-Below is an example of how to configure your yocto BSP before building the first time.<br>
-Please note that this is intended to only be done once. If you need to change the configuration
-after building, please edit the local.conf file directly.
-<pre>
-$ scripts/yocto_setup/setup.sh
-</pre>
-In the GUI menu, choose your board and then select "Save" to start the setup and configuration.
+## What is included:
 
-After complete, you can build your Yocto BSP.<br>
-<pre>
-$ source poky/oe-init-build-env
-$ bitbake core-image-qt
-</pre>
-Please refer to the BSP 'Release Note' for more details on building and advanced configurations.
+### build_scripts
+* Scripts that allow you to build BSP software components outside of the Yocto build environment.
 
+### docker_setup
+* Instructions for setting up a docker container for build BSP images. Some BSPs required older versions of Ubuntu which you could use a docker container running in any version of Ubuntu.
+
+### flash\_writer\_tool
+* A graphical front end for the flash writer programming utility
+
+### image_creator
+* A script that will create a complete image file (sd_card.img) that can be programmed into an SD Card, eMMC or USB Flash drive.
+
+### usb\_sd\_partition
+* A SD Card & USB Flash Drive Partitioning Script
