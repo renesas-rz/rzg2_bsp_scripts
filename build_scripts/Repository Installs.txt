@@ -1,49 +1,32 @@
 Please use the commands below to download the correct repository for building.
 
+Refer to the wiki page of each github repositry to find out what branch to clone.
+
 ---------------------------------------------------
 RZ Flash Writer
 ---------------------------------------------------
 
-Repository:
+Branch information: https://github.com/renesas-rz/rzg2_flash_writer/wiki
+
+Clone repository and check out xxxx branch:
 	$ git clone https://github.com/renesas-rz/rzg2_flash_writer
-
-Branches:
-
-  RZ/G2E, RZ/G2N, RZ/G2M, RZ/G2H:
-	$ cd rzg2_flash_writer ; git checkout master ; cd ..
-
-  RZ/G2L:
-	$ cd rzg2_flash_writer ; git checkout rz_g2l ; cd ..
-
-  RZ/V2L:
-	$ cd rzg2_flash_writer ; git checkout rz_g2l ; cd ..
-
-  RZ/V2M:
-	$ cd rzg2_flash_writer ; git checkout rz_v2m ; cd ..
+	$ cd rzg2_flash_writer
+	$ git checkout xxxxx
+	$ cd ..
 
 
 ---------------------------------------------------
-TF-A
+Trusted Firmware-ARM (TF-A)
 ---------------------------------------------------
-NOTE: Also download mbed (see below)
+NOTE: Please also download mbed. It is required to build TF-A (see below)
 
-Repository:
+Branch information: https://github.com/renesas-rz/rzg_trusted-firmware-a/wiki
+
+Clone repository and check out xxxx branch:
 	$ git clone https://github.com/renesas-rz/rzg_trusted-firmware-a
-
-Branches:
-
-  RZ/G2E, RZ/G2N, RZ/G2M, RZ/G2H:
-  * BSP v1.0.9+
-	$ cd rzg_trusted-firmware-a ; git checkout v2.5/rzg2 ; cd ..
-
-  * BSP <= v1.0.8
-	$ cd rzg_trusted-firmware-a ; git checkout v2.4/rzg2 ; cd ..
-
-  RZ/G2L:
-  	$ cd rzg_trusted-firmware-a; git checkout v2.5/rzg2l ; cd ..
-
-  RZ/V2L:
-  	$ cd rzg_trusted-firmware-a ; git checkout develop/rzv2l ; cd ..
+	$ cd rzg_trusted-firmware-a
+	$ git checkout xxxxx
+	$ cd ..
 
 
 ---------------------------------------------------
@@ -51,65 +34,34 @@ mbed
 ---------------------------------------------------
 NOTES: mbed code is needed to build Trusted Firmware-A in BSP v1.0.5+
 
-Repository:
+Clone repository and check out branch:
 	$ git clone git://github.com/ARMmbed/mbedtls.git
-
-Branches:
-  RZ/G2E, RZ/G2N, RZ/G2M, RZ/G2H:
-	$ cd mbedtls ; git checkout mbedtls-2.16.3 ; cd ..
+	$ cd mbedtls
+	$ git checkout mbedtls-2.16.3
+	$ cd ..
 
 
 ---------------------------------------------------
 u-boot
 ---------------------------------------------------
 
-Repository:
+Branch information: https://github.com/renesas-rz/renesas-u-boot-cip/wiki
+
+Clone repository and check out xxxx branch:
 	$ git clone https://github.com/renesas-rz/renesas-u-boot-cip
-
-Branches:
-
-  RZ/G2E, RZ/G2N, RZ/G2M, RZ/G2H:
-	(BSP v1.0.8+)
-	$ cd renesas-u-boot-cip ; git checkout v2020.10/rzg2 ; cd ..
-
-	(BSP <= v1.0.7)
-	$ cd renesas-u-boot-cip ; git checkout v2018.09/rzg2 ; cd ..
-
-  RZ/G2L:
-	$ cd renesas-u-boot-cip ; git checkout v2020.10/rzg2l ; cd ..
-
-  RZ/V2L:
-	$ cd renesas-u-boot-cip ; git checkout develop/rzv2l; cd ..
-
-  RZ/V2M:
-	(none)
-
-  RZ/G1:
-	$ cd renesas-u-boot-cip ; git checkout 2013.01.01/rzg1-iwave ; cd ..
-	$ cd renesas-u-boot-cip ; git checkout 2013.01.01/rzg1-iwave-g1c ; cd ..
-
+	$ cd renesas-u-boot-cip
+	$ git checkout xxxxx
+	$ cd ..
 
 ---------------------------------------------------
 kernel
 ---------------------------------------------------
 
-Repository:
+Branch information: https://github.com/renesas-rz/rz_linux-cip/wiki
+
+Clone repository and check out xxxx branch:
 	$ git clone https://github.com/renesas-rz/rz_linux-cip
+	$ cd rz_linux-cip
+	$ git checkout xxxx
+	cd ..
 
-Branches:
-
-  RZ/G2E, RZ/G2N, RZ/G2M, RZ/G2H:
-  BSP v1.0.8
-	$ cd rz_linux-cip ; git checkout -b rzg2_bsp_v1.0.8 ae1fef4b10f2 ; cd ..
-  BSP v1.0.8-RT
-	$ cd rz_linux-cip ; git checkout -b rzg2_bsp_v1.0.8rt 0882431bf2fe ; cd ..
-  BSP v1.0.9
-	$ cd rz_linux-cip ; git checkout -b rzg2_bsp_v1.0.9 ba8ac89871d7 ; cd ..
-  BSP v1.0.9-RT
-	$ cd rz_linux-cip ; git checkout -b rzg2_bsp_v1.0.9rt f0dfabb6a804 ; cd ..
-
-  RZ/G2L:
-	$ cd rz_linux-cip ; git checkout rzg2l-cip41 ; cd ..
-
-  RZ/V2L:
-	$ cd rz_linux-cip ; git checkout rzgvl-cip41 ; cd ..
