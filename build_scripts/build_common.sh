@@ -88,7 +88,7 @@ save_setting() {
 check_packages() {
 
   MISSING_A_PACKAGE=0
-  PACKAGE_LIST=(git make gcc g++ python bison flex)
+  PACKAGE_LIST=(git make gcc g++ python3 bison flex)
 
   for i in ${PACKAGE_LIST[@]} ; do
     CHECK=$(which $i)
