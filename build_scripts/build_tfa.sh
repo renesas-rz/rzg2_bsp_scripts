@@ -237,6 +237,11 @@ create_fip_and_copy() {
   echo -e "[Copy BIN file]"
   cp -v build/${PLATFORM}/$BUILD_DIR/bl2_bp.bin ../$OUT_DIR/bl2_bp-${MACHINE}${EXTRA}.bin
 
+  echo -e "[Copy BIN file (no boot parameters)]"
+  cp -v build/${PLATFORM}/$BUILD_DIR/bl2.bin ../$OUT_DIR/bl2-${MACHINE}${EXTRA}.bin
+
+  echo -e "[Copy boot parameters]"
+  cp -v build/${PLATFORM}/$BUILD_DIR/bootparams.bin ../$OUT_DIR/bootparams-${MACHINE}${EXTRA}.bin
 
   echo -e "[Convert BIN to SREC format]"
   #<BL2>
