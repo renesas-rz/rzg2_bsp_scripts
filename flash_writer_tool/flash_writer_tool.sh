@@ -881,7 +881,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 	"c. $OP2 Program BL2     " "  BL2 (Trusted Boot Firmware)" \
 	"d. $OP1 Program SA6     " "  SA6 (Cert Header)" \
 	"e. $OP1 Program BL31    " "  BL31 (EL3 Runtime Software)" \
-	"f. $OP3 Program FIP     " "  FIP (Firemare Image Package)" \
+	"f. $OP3 Program FIP     " "  FIP (Firmware Image Package)" \
 	"g. $OP1 Program u-boot  " "  u-boot (BL33, Non-trusted Firmware)" \
 	"h. $OP2 Program ATF     " "  Program all arm-trusted-firmware files (SA0,BL2,SA6,BL31,FIP)" \
 	"i. $OP1 Program All     " "  Programs all files (SA0,BL2,SA66,BL31 and u-boot)" \
