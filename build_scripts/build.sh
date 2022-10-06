@@ -46,39 +46,6 @@ else
   source build_common.sh
 fi
 
-
-# Toolchain Selection GUI
-# Since each sub-script will want to ask the user what toolchain to use, we will keep a common interface in this file.
-if [ "$1" == "toolchain_select" ] ; then
-
-    SELECT=$(whiptail --title "Toolchain setup" --menu "You may use ESC+ESC to cancel.\nEnter the command line you want to run before build.\n" 0 0 0 \
-	"1  SDK Toolchain (Rocko/Poky 2.4.3)" "  /opt/poky/2.4.3/environment-setup-aarch64-poky-linux" \
-	"2  Linaro gcc-linaro-7.5.0-2019.12" "  /opt/linaro/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu" \
-	"3  ARM gcc-arm-10.2-2020.11" "  /opt/arm/gcc-arm-10.2-2020.11-x86_64-aarch64-none-elf" \
-	"0  (none)" "  No setup" \
-	3>&1 1>&2 2>&3)
-  RET=$?
-  if [ $RET -eq 0 ] ; then
-    case "$SELECT" in
-      1\ *)
-      		x_TOOLCHAIN_SETUP_NAME="SDK Toolchain (Poky 2.4.3)" ; x_TOOLCHAIN_SETUP="source /opt/poky/2.4.3/environment-setup-aarch64-poky-linux" ;;
-      2\ *)
-      		x_TOOLCHAIN_SETUP_NAME="Linaro gcc-linaro-7.5.0-2019.12" ; x_TOOLCHAIN_SETUP="PATH=/opt/linaro/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin:\$PATH ; export CROSS_COMPILE=aarch64-linux-gnu-" ;;
-      3\ *)
-      		x_TOOLCHAIN_SETUP_NAME="ARM gcc-arm-10.2-2020.11" ; x_TOOLCHAIN_SETUP="PATH=/opt/arm/gcc-arm-10.2-2020.11-x86_64-aarch64-none-elf/bin:\$PATH ; export CROSS_COMPILE=aarch64-none-elf-" ;;
-      0\ *)
-		x_TOOLCHAIN_SETUP_NAME="(none)" ; x_TOOLCHAIN_SETUP= ;;
-      *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
-    esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
-  fi
-
-  # Save our replies to some tmp file so other scripts can read it
-  echo "x_TOOLCHAIN_SETUP_NAME=\"$x_TOOLCHAIN_SETUP_NAME\"" > /tmp/toolchain_reply.txt
-  echo "x_TOOLCHAIN_SETUP=\"$x_TOOLCHAIN_SETUP\"" >> /tmp/toolchain_reply.txt
-
-  exit
-fi
-
 # $1 = env variable to save
 # $2 = value
 # Remember, we we share this file with other scripts, so we only want to change
@@ -166,6 +133,7 @@ Please select what you want to build:
   ./build.sh m                       # Build Linux Kernel multimedia modules
 
   ./build.sh s                       # Setup - Choose board and build options
+  ./build.sh tc                      # Toolchain - Change just the Toolchain selection
 "
   exit
 fi
@@ -273,5 +241,16 @@ if [ "$1" == "s" ] ; then
   else
     save_setting TFA_FIP 0
   fi
+
+fi
+
+# Toolchain Selection GUI
+
+if [ "$1" == "tc" ] ; then
+
+  # Select common toolchain
+  select_toolchain "COMMON_TOOLCHAIN_SETUP_NAME" "COMMON_TOOLCHAIN_SETUP"
+  save_setting COMMON_TOOLCHAIN_SETUP_NAME "\"$COMMON_TOOLCHAIN_SETUP_NAME\""
+  save_setting COMMON_TOOLCHAIN_SETUP "\"$COMMON_TOOLCHAIN_SETUP\""
 
 fi
