@@ -28,6 +28,8 @@
 # MACHINE=smarc-rzv2l	# Renesas RZ/V2L EVK
 #   BOARD_VERSION: DISCRETE, PMIC
 
+# Supported MPU
+# RZG2H, RZG2N, RZG2M, RZG2E, RZG2L, RZG2LC, RZG2UL, RZV2L
 
 #----------------------------------------------
 # Default Settings
@@ -37,6 +39,9 @@ UBOOT_DIR_DEFAULT=renesas-u-boot-cip
 FW_DIR_DEFAULT=rzg2_flash_writer
 KERNEL_DIR_DEFAULT=rz_linux-cip
 OUT_DIR=output_${MACHINE}
+TFA_FIP=0
+MPU=RZG2L
+
 
 # Read in functions from build_common.sh
 if [ ! -e build_common.sh ] ; then
@@ -179,11 +184,11 @@ if [ "$1" == "s" ] ; then
   if [ $RET -eq 0 ] ; then
     BOARD_VERSION=""  # Clear out BOARD_VERSION in case there is not one
     case "$SELECT" in
-      1\ *) FW_BOARD=HIHOPE ; MACHINE=hihope-rzg2m ;;
-      2\ *) FW_BOARD=HIHOPE ; MACHINE=hihope-rzg2n ;;
-      3\ *) FW_BOARD=HIHOPE ; MACHINE=hihope-rzg2h ;;
-      4\ *) FW_BOARD=EK874 ; MACHINE=ek874 ;;
-      5\ *) FW_BOARD=RZG2L_SMARC ; MACHINE=smarc-rzg2l
+      1\ *) FW_BOARD=HIHOPE ; MACHINE=hihope-rzg2m ; MPU=RZG2M ;;
+      2\ *) FW_BOARD=HIHOPE ; MACHINE=hihope-rzg2n ; MPU=RZG2N ;;
+      3\ *) FW_BOARD=HIHOPE ; MACHINE=hihope-rzg2h ; MPU=RZG2H ;;
+      4\ *) FW_BOARD=EK874 ; MACHINE=ek874 ; MPU=RZG2E ;;
+      5\ *) FW_BOARD=RZG2L_SMARC ; MACHINE=smarc-rzg2l ; MPU=RZG2L ; TFA_FIP=1
 	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?\n\nThe PMIC version has \"Reneas\" printed in the middle of the SOM board.\nThe Discrete version has \"Renesas\" printed at the edge of the SOM baord.   " 0 0 0
 	if [ "$?" == "0" ] ; then
 		BOARD_VERSION="PMIC"
@@ -193,9 +198,9 @@ if [ "$1" == "s" ] ; then
 		FW_BOARD=RZG2L_SMARC
 	fi
       ;;
-      6\ *) FW_BOARD=RZG2LC_SMARC ; MACHINE=smarc-rzg2lc ;;
-      7\ *) FW_BOARD=RZG2UL_SMARC ; MACHINE=smarc-rzg2ul ;;
-      8\ *) FW_BOARD=RZV2L_SMARC ; MACHINE=smarc-rzv2l
+      6\ *) FW_BOARD=RZG2LC_SMARC ; MACHINE=smarc-rzg2lc ; MPU=RZG2LC ; TFA_FIP=1 ;;
+      7\ *) FW_BOARD=RZG2UL_SMARC ; MACHINE=smarc-rzg2ul ; MPU=RZG2UL ; TFA_FIP=1 ;;
+      8\ *) FW_BOARD=RZV2L_SMARC ; MACHINE=smarc-rzv2l ; MPU=RZVG2L ; TFA_FIP=1
 	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?\n\nThe PMIC version has \"Reneas\" printed in the middle of the SOM board.\nThe Discrete version has \"Renesas\" printed at the edge of the SOM baord.   " 0 0 0
 	if [ "$?" == "0" ] ; then
 		BOARD_VERSION="PMIC"
@@ -231,16 +236,13 @@ if [ "$1" == "s" ] ; then
   save_setting MACHINE $MACHINE
   save_setting OUT_DIR output_${MACHINE}
   save_setting BOARD_VERSION $BOARD_VERSION
+  save_setting MPU $MPU
 
   # Set defaults for Flash Writer script
   save_setting FW_BOARD $FW_BOARD
 
   # Set defaults for Flash Writer script
-  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] || [ "$MACHINE" == "smarc-rzv2l" ] || [ "$MACHINE" == "smarc-rzg2ul" ]; then
-    save_setting TFA_FIP 1
-  else
-    save_setting TFA_FIP 0
-  fi
+  save_setting TFA_FIP $TFA_FIP
 
 fi
 
