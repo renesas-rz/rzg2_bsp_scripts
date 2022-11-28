@@ -19,6 +19,9 @@
 #TFA_ECC_FULL: 0=no ECC, 1=ECC dual channel, 2=ECC single channel
 #TFA_FIP: 0=no FIP, 1= yes FIP
 
+# Supported MPU
+# RZG2H, RZG2N, RZG2M, RZG2E, RZG2L, RZG2LC, RZG2UL, RZV2L
+
 # Read in functions from build_common.sh
 if [ ! -e build_common.sh ] ; then
   echo -e "\n ERROR: File \"build_common.sh\" not found\n."
@@ -468,12 +471,52 @@ else
   G2H_LOSSY="RCAR_LOSSY_ENABLE=1"
 fi
 
+# Platform and Certificate Tool Settings
+case "$MPU" in
+  "RZG2H")
+    PLATFORM=rzg
+    TOOL=rzg
+    ;;
+  "RZG2M")
+    PLATFORM=rzg
+    TOOL=rzg
+    ;;
+  "RZG2N")
+    PLATFORM=rzg
+    TOOL=rzg
+    ;;
+  "RZG2E")
+    PLATFORM=rzg
+    TOOL=rzg
+    ;;
+  "RZG2L")
+    PLATFORM=g2l
+    TOOL=
+    ;;
+  "RZG2LC")
+    PLATFORM=g2l
+    TOOL=
+    ;;
+  "RZG2UL")
+    PLATFORM=g2ul
+    TOOL=
+    ;;
+  "RZV2L")
+    PLATFORM=v2l
+    TOOL=
+    ;;
+esac
+
+
+
 # Board Settings
 case "$MACHINE" in
   "smarc-rzg2l")
 
     # Old directory structure
     if [ -e plat/renesas/rzg2l/platform.mk ] ; then
+
+      # Requires the old Platform name
       PLATFORM=rzg2l
       # "BOARD_RZG2L_EVA" was renamed to "RZG2L_SMARC_EVK"
       # "BOARD_RZG2L_15MMSQ" was renamed to "RZG2L_DEVELOPMENT_BOARD"
@@ -494,48 +537,29 @@ case "$MACHINE" in
 
     # New directory structure
     if [ -e plat/renesas/rz ] ; then
-      PLATFORM=g2l
       if [ "$BOARD_VERSION" == "PMIC" ] ; then
         TFA_OPT="BOARD=smarc_pmic_2"
       else
         TFA_OPT="BOARD=smarc_2"
       fi
 
-    # Internal Renesas Boards
-    #TFA_OPT="BOARD=dev15_4" #rzg2l-dev
-    #TFA_OPT="BOARD=dev13_1" #rzg2lc-dev
   fi
-
-    #PLATFORM=g2l
-    TOOL=
     ;;
 
   "smarc-rzg2lc")
-    PLATFORM=g2l
     TFA_OPT="BOARD=smarc_1"
-
-    TOOL=
     ;;
 
   "smarc-rzg2ul")
-    PLATFORM=g2ul
     TFA_OPT="BOARD=g2ul_smarc SOC_TYPE=1 SPI_FLASH=AT25QL128A"
-
-    TOOL=
     ;;
 
   "smarc-rzv2l")
-   PLATFORM=v2l
    if [ "$BOARD_VERSION" == "PMIC" ] ; then
      TFA_OPT="BOARD=smarc_pmic_2"
    else
      TFA_OPT="BOARD=smarc_4"
    fi
-
-    # Internal Renesas Boards
-    #TFA_OPT="BOARD=dev15_4" #rzv2l-dev
-
-    TOOL=
     ;;
 
   "ek874")
@@ -543,32 +567,24 @@ case "$MACHINE" in
 
     # Common Settings for RZ/G2E
     TFA_OPT="$TFA_OPT RCAR_SA0_SIZE=0 RCAR_RPC_HYPERFLASH_LOCKED=0"
-    PLATFORM=rzg
-    TOOL=rzg
     ;;
   "hihope-rzg2m")
     TFA_OPT="LSI=G2M RZG_DRAM_SPLIT=2 SPD="none" $G2M_ECC $G2M_LOSSY"
 
     # Common Settings for RZ/G2M
     TFA_OPT="$TFA_OPT RCAR_RPC_HYPERFLASH_LOCKED=0"
-    PLATFORM=rzg
-    TOOL=rzg
     ;;
   "hihope-rzg2n")
     TFA_OPT="LSI=G2N SPD="none" $G2N_ECC $G2N_LOSSY"
 
     # Common Settings for RZ/G2N
     TFA_OPT="$TFA_OPT RCAR_RPC_HYPERFLASH_LOCKED=0"
-    PLATFORM=rzg
-    TOOL=rzg
     ;;
   "hihope-rzg2h")
     TFA_OPT="LSI=G2H RZG_DRAM_SPLIT=2 RZG_DRAM_LPDDR4_MEMCONF=1 RCAR_DRAM_CHANNEL=5 SPD="none" $G2H_ECC $G2H_LOSSY"
 
     # Common Settings for RZ/G2H
     TFA_OPT="$TFA_OPT RCAR_RPC_HYPERFLASH_LOCKED=0"
-    PLATFORM=rzg
-    TOOL=rzg
     ;;
 esac
 
