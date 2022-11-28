@@ -131,17 +131,21 @@ $ ./build.sh k             # Build Linux kernel
 
 <p>2) Manually edit the file <strong>board.ini</strong> and make the following changes:</p>
 
-<p>Board Name:</p>
+<p><strong>MACHINE=xxxxx</strong></p>
 
 <ul>
-<li><strong>MACHINE=xxxxx</strong></li>
 <li>Match your board name (MACHINE) that you use for your Yocto build configuration</li>
 </ul>
 
-<p>Flash Writer:</p>
+<p><strong>OUT_DIR=output_xxxx</strong></p>
 
 <ul>
-<li><strong>FW_BOARD=xxxx</strong></li>
+<li>This is the directory where all the output files from each build are copied to.</li>
+</ul>
+
+<p><strong>FW_BOARD=xxxx</strong></p>
+
+<ul>
 <li>Flash Writer does not use the MACHINE name for building. Instead, it uses board BOARD=xxxx.</li>
 <li>Make this setting match what you want to pass as BOARD=xxxx on the build command line</li>
 </ul>
@@ -157,6 +161,14 @@ $ ./build.sh k             # Build Linux kernel
 <ul>
 <li>rzg_trusted-firmware-a/configs/xxx_defconfig</li>
 <li>You will find examples of the Renesas  boards in that configs directory</li>
+</ul>
+
+<p><strong>Trusted Firmware-A:</strong></p>
+
+<ul>
+<li>You need a directory that matches the MACHINE name under rzg_trusted-firmware-a/plat/renesas/rz/board/</li>
+<li>The build system will look for the file rz_board.mk in that directory.</li>
+<li>Example: rzg_trusted-firmware-a/plat/renesas/rz/board/<strong>xxxx</strong>/rz_board.mk</li>
 </ul>
 
 </BODY>

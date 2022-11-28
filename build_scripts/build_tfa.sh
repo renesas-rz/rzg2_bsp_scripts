@@ -510,6 +510,11 @@ esac
 
 
 # Board Settings
+
+# By default, set BOARD to MACHINE name (in case non-Renesas board)
+TFA_OPT="BOARD=$MACHINE"
+
+# Set Board based on selected Renesas eval board
 case "$MACHINE" in
   "smarc-rzg2l")
 

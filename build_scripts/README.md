@@ -110,14 +110,16 @@ The procedure is as follows:
 
 2) Manually edit the file **board.ini** and make the following changes:
 
-Board Name:
+**MACHINE=xxxxx**
 
-* **MACHINE=xxxxx**
 * Match your board name (MACHINE) that you use for your Yocto build configuration
 
-Flash Writer:
+**OUT_DIR=output\_xxxx**
 
-* **FW_BOARD=xxxx**
+* This is the directory where all the output files from each build are copied to.
+
+**FW_BOARD=xxxx**
+
 * Flash Writer does not use the MACHINE name for building. Instead, it uses board BOARD=xxxx.
 * Make this setting match what you want to pass as BOARD=xxxx on the build command line
 
@@ -129,4 +131,14 @@ Flash Writer:
 
 * rzg\_trusted-firmware-a/configs/xxx_defconfig
 * You will find examples of the Renesas  boards in that configs directory
+
+**Trusted Firmware-A:**
+
+* You need a directory that matches the MACHINE name under rzg_trusted-firmware-a/plat/renesas/rz/board/
+* The build system will look for the file rz_board.mk in that directory.
+* Example: rzg\_trusted-firmware-a/plat/renesas/rz/board/**xxxx**/rz_board.mk
+
+
+
+
 
