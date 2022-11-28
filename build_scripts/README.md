@@ -99,3 +99,34 @@ $ ./build.sh u             # Build u-boot
 $ ./build.sh t             # Build trusted firmware
 $ ./build.sh k             # Build Linux kernel
 </pre>
+
+## Using a Custom Board
+
+These scripts can be used to build images for non-Renesas boards.
+
+The procedure is as follows:
+
+1) Use the command "./build.sh s" and select a Renesas Evaluation board with the same device as your custom board. This will create a board.ini file that you can then customize.
+
+2) Manually edit the file **board.ini** and make the following changes:
+
+Board Name:
+
+* **MACHINE=xxxxx**
+* Match your board name (MACHINE) that you use for your Yocto build configuration
+
+Flash Writer:
+
+* **FW_BOARD=xxxx**
+* Flash Writer does not use the MACHINE name for building. Instead, it uses board BOARD=xxxx.
+* Make this setting match what you want to pass as BOARD=xxxx on the build command line
+
+3) Create Configuration Files
+
+* Please note that since you have changed the MACHINE setting to xxxx, you will need to add the following files:
+
+**u-boot:**
+
+* rzg\_trusted-firmware-a/configs/xxx_defconfig
+* You will find examples of the Renesas  boards in that configs directory
+
