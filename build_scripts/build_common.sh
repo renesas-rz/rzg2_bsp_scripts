@@ -14,12 +14,6 @@
 select_toolchain() {
 
   # Get a list of directories under /opt/arm, /opt/linaro, /opt/poky
-  array_arm=( $(find /opt/arm -mindepth 1 -maxdepth 1 -type d))
-  array_arm_size=${#array_arm[@]}
-  array_linaro=( $(find /opt/linaro -mindepth 1 -maxdepth 1 -type d))
-  array_linaro_size=${#array_linaro[@]}
-  array_poky=( $(find /opt/poky -mindepth 1 -maxdepth 1 -type d))
-  array_poky_size=${#array_poky[@]}
 
   INDEX=0
   # No Toolchain setup
@@ -29,39 +23,57 @@ select_toolchain() {
   #menu_text="$menu_text \"$INDEX (none)\" \"Build script do not set up toolchian (advanced)\""
   INDEX=$((INDEX+1))
 
-  # Poky (SDK) Toolchains
-  for i in $(seq $array_poky_size) ; do
-    #echo $i ${array_poky[$((i-1))]}
-    tc_version=$(basename ${array_poky[$((i-1))]})
-    tc_array_text+=("Poky (Yocto SDK) ($tc_version)")
-    tc_array_setup+=("source ${array_poky[$((i-1))]}/environment-setup-aarch64-poky-linux")
+  # Look for Poky (SDK) Toolchains
+  if [ -e /opt/poky ] ; then
+    array_poky=( $(find /opt/poky -mindepth 1 -maxdepth 1 -type d))
+  fi
+  array_poky_size=${#array_poky[@]}
+  if [ "$array_poky_size" != "0" ] ; then
+    for i in $(seq $array_poky_size) ; do
+      #echo $i ${array_poky[$((i-1))]}
+      tc_version=$(basename ${array_poky[$((i-1))]})
+      tc_array_text+=("Poky (Yocto SDK) ($tc_version)")
+      tc_array_setup+=("source ${array_poky[$((i-1))]}/environment-setup-aarch64-poky-linux")
 
-    menu_text="$menu_text \"$INDEX Poky (Yocto SDK)\" \"${array_poky[$((i-1))]}\""
-    INDEX=$((INDEX+1))
-  done
-  
-  # ARM Toolchians
-  for i in $(seq $array_arm_size) ; do
-    #echo $i ${array_arm[$((i-1))]}
+      menu_text="$menu_text \"$INDEX Poky (Yocto SDK)\" \"${array_poky[$((i-1))]}\""
+      INDEX=$((INDEX+1))
+    done
+  fi
 
-    tc_version=$(echo $(basename ${array_arm[$((i-1))]}) | sed "s/-x86.*//")
-    tc_array_text+=("ARM ($tc_version)")
-    tc_array_setup+=("PATH=${array_arm[$((i-1))]}/bin:\$PATH ; export CROSS_COMPILE=aarch64-none-elf-")
+  # ARM Toolchains
+  if [ -e /opt/arm ] ; then
+    array_arm=( $(find /opt/arm -mindepth 1 -maxdepth 1 -type d))
+  fi
+  array_arm_size=${#array_arm[@]}
+  if [ "$array_arm_size" != "0" ] ; then
+    for i in $(seq $array_arm_size) ; do
+      #echo $i ${array_arm[$((i-1))]}
 
-    menu_text="$menu_text \"$INDEX ARM Toolchain\" \"${array_arm[$((i-1))]}\""
-    INDEX=$((INDEX+1))
-  done
+      tc_version=$(echo $(basename ${array_arm[$((i-1))]}) | sed "s/-x86.*//")
+      tc_array_text+=("ARM ($tc_version)")
+      tc_array_setup+=("PATH=${array_arm[$((i-1))]}/bin:\$PATH ; export CROSS_COMPILE=aarch64-none-elf-")
 
-  # Linaro Toolchians
-  for i in $(seq $array_linaro_size) ; do
-    #echo $i ${array_linaro[$((i-1))]}
-    tc_version=$(echo $(basename ${array_arm[$((i-1))]}) | sed "s/-x86.*//")
-    tc_array_text+=("Linaro ($tc_version)")
-    tc_array_setup+=("PATH=${array_linaro[$((i-1))]}/bin:\$PATH ; export CROSS_COMPILE=aarch64-linux-gnu-")
+      menu_text="$menu_text \"$INDEX ARM Toolchain\" \"${array_arm[$((i-1))]}\""
+      INDEX=$((INDEX+1))
+    done
+  fi
 
-    menu_text="$menu_text \"$INDEX Linaro\" \"${array_linaro[$((i-1))]}\""
-    INDEX=$((INDEX+1))
-  done
+  # Linaro Toolchains
+  if [ -e /opt/linaro ] ; then
+    array_linaro=( $(find /opt/linaro -mindepth 1 -maxdepth 1 -type d))
+  fi
+  array_linaro_size=${#array_linaro[@]}
+  if [ "$array_linaro_size" != "0" ] ; then
+    for i in $(seq $array_linaro_size) ; do
+      #echo $i ${array_linaro[$((i-1))]}
+      tc_version=$(echo $(basename ${array_arm[$((i-1))]}) | sed "s/-x86.*//")
+      tc_array_text+=("Linaro ($tc_version)")
+      tc_array_setup+=("PATH=${array_linaro[$((i-1))]}/bin:\$PATH ; export CROSS_COMPILE=aarch64-linux-gnu-")
+
+      menu_text="$menu_text \"$INDEX Linaro\" \"${array_linaro[$((i-1))]}\""
+      INDEX=$((INDEX+1))
+    done
+  fi
 
   # No Toolchain setup (menu text)
   # Even though this option is 0, let's put it at the end.
