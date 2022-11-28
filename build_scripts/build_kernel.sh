@@ -34,6 +34,7 @@ if [ "$MACHINE" == "hihope-rzg2h" ] ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG
 if [ "$MACHINE" == "ek874" ]        ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG2" ; fi
 if [ "$MACHINE" == "smarc-rzg2l" ]  ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG2L" ; fi
 if [ "$MACHINE" == "smarc-rzg2lc" ] ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG2L" ; fi
+if [ "$MACHINE" == "smarc-rzg2ul" ] ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG2L" ; fi
 if [ "$MACHINE" == "smarc-rzv2l" ]  ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZV2L" ; fi
 
 
@@ -60,11 +61,12 @@ fi
 if [ "$1" == "" ] ; then
   echo "Standard kernel Make Command Options:"
   echo "defconfig                # Configure the kernel (Must do first before you can build)"
-  echo "_all                     # Build the kernel and Device Trees"
+  echo "all                      # Build the kernel and Device Trees"
   echo "dtbs                     # Build the Device Trees"
   echo "menuconfig               # Kernel Configuration Tool"
   echo "clean                    # make clean"
   echo ""
+  echo "deploy                   # Copy the output files"
   echo ""
   echo "Special Renesas Command Options:"
 #  echo "make_config              # Create a defconfig based on what you need to enable"
@@ -72,7 +74,7 @@ if [ "$1" == "" ] ; then
   echo ""
   echo "Example build:"
   echo "  $ ./build.sh k defconfig"
-  echo "  $ ./build.sh k _all"
+  echo "  $ ./build.sh k all"
   echo "  $ ./build.sh k deploy"
   exit
 fi
