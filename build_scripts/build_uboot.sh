@@ -25,15 +25,22 @@ fi
 # Read our settings (board.ini) or whatever file SETTINGS_FILE was set to
 read_setting
 
-# Define the defconfigs for Renesas boards
+# For most eval boards, the defconfig is the same name as the MACHINE name.
+# Check if it was already set in case there was some custom name)
+# smarc-rzg2l_defconfig
+# smarc-rzg2lc_defconfig
+# smarc-rzg2ul_defconfig
+# smarc-rzv2l_defconfig
+if [ "$DEFCONFIG" = "" ] ; then
+  DEFCONFIG="${MACHINE}_defconfig"
+fi
+
+# Define (override) the defconfigs for Renesas boards that have non-standard names
 if [ "$MACHINE" == "hihope-rzg2m" ] ; then DEFCONFIG=r8a774a1_hihope-rzg2m_defconfig ; fi
 if [ "$MACHINE" == "hihope-rzg2n" ] ; then DEFCONFIG=r8a774b1_hihope-rzg2n_defconfig ; fi
 if [ "$MACHINE" == "hihope-rzg2h" ] ; then DEFCONFIG=r8a774e1_hihope-rzg2h_defconfig ; fi
 if [ "$MACHINE" == "ek874" ] ; then DEFCONFIG=r8a774c0_ek874_defconfig ; fi
-if [ "$MACHINE" == "smarc-rzg2l" ] ; then DEFCONFIG=smarc-rzg2l_defconfig ; fi
-if [ "$MACHINE" == "smarc-rzg2lc" ] ; then DEFCONFIG=smarc-rzg2lc_defconfig ; fi
-if [ "$MACHINE" == "smarc-rzg2ul" ] ; then DEFCONFIG=smarc-rzg2ul_defconfig ; fi
-if [ "$MACHINE" == "smarc-rzv2l" ] ; then DEFCONFIG=smarc-rzv2l_defconfig ; fi
+
 
 # Set the output directory (because I like all my build files separate from the source code)
 OUT=.out
@@ -126,9 +133,9 @@ cd $UBOOT_DIR
 # If this is the first time building, we need to configure first
 if [ ! -e "$OUT/.config" ] ; then
 
-  if [ "$DEFCONFIG" == "" ] ; then
+  if [ ! -e "configs/$DEFCONFIG" ] ; then
     echo ""
-    echo "ERROR: Please set DEFCONFIG in settings file ($SETTINGS_FILE)"
+    echo "ERROR: Default configuration file configs/$DEFCONFIG does not exist"
     echo ""
     exit
   fi
