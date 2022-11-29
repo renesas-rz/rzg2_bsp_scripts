@@ -285,8 +285,8 @@ if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZG2L" ] ; then
 
   # Copy to output directory
   #if [ "$OUT_DIR" != "" ] ; then
-  #  mkdir -p ../$OUT_DIR
-  #  cp -v $DEPLOY_DIR/$MACHINE/* ../$OUT_DIR
+  #  mkdir -p $OUT_DIR
+  #  cp -v $DEPLOY_DIR/$MACHINE/* $OUT_DIR
   #  echo -e "Files copied to $OUT_DIR"
   #fi
 
@@ -323,8 +323,8 @@ if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZV2L" ] ; then
 
   # Copy to output directory
   #if [ "$OUT_DIR" != "" ] ; then
-  #  mkdir -p ../$OUT_DIR
-  #  cp -v $DEPLOY_DIR/$MACHINE/* ../$OUT_DIR
+  #  mkdir -p $OUT_DIR
+  #  cp -v $DEPLOY_DIR/$MACHINE/* $OUT_DIR
   #  echo -e "Files copied to $OUT_DIR"
   #fi
 

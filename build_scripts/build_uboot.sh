@@ -157,13 +157,13 @@ eval $CMD
 if [ -e $OUT/u-boot.bin ] && [ "$OUT_DIR" != "" ] ; then
 
   echo -e "\nCopying files to output directory"
-  mkdir -p ../$OUT_DIR
-  cp -v $OUT/u-boot.bin ../$OUT_DIR
-  cp -v $OUT/u-boot.srec ../$OUT_DIR
+  mkdir -p $OUT_DIR
+  cp -v $OUT/u-boot.bin $OUT_DIR
+  cp -v $OUT/u-boot.srec $OUT_DIR
 
   # Use the same filenames as the Yocto output
-  #cp -v $OUT/u-boot.bin ../$OUT_DIR/u-boot-${MACHINE}.bin
-  #cp -v $OUT/u-boot.srec ../$OUT_DIR//u-boot-${MACHINE}.srec
+  #cp -v $OUT/u-boot.bin $OUT_DIR/u-boot-${MACHINE}.bin
+  #cp -v $OUT/u-boot.srec $OUT_DIR//u-boot-${MACHINE}.srec
 fi
 
 

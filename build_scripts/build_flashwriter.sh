@@ -249,8 +249,8 @@ if [ "$1" == "" ] ; then
 
       # copy to output directory
       if [ -e AArch64_output/$OUTFILE ] && [ "$OUT_DIR" != "" ] ; then
-        mkdir -p ../$OUT_DIR
-        cp -v AArch64_output/$OUTFILE ../$OUT_DIR
+        mkdir -p $OUT_DIR
+        cp -v AArch64_output/$OUTFILE $OUT_DIR
         echo -e "File AArch64_output/$OUTFILE copied to $OUT_DIR"
       fi
 
@@ -315,7 +315,7 @@ $CMD
 
 # copy to output directory
 if [ -e AArch64_output/$OUTFILE ] && [ "$OUT_DIR" != "" ] ; then
-  mkdir -p ../$OUT_DIR
-  cp -v AArch64_output/$OUTFILE ../$OUT_DIR
+  mkdir -p $OUT_DIR
+  cp -v AArch64_output/$OUTFILE $OUT_DIR
   echo -e "File AArch64_output/$OUTFILE copied to $OUT_DIR"
 fi

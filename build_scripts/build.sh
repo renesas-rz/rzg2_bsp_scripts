@@ -143,28 +143,6 @@ Please select what you want to build:
   exit
 fi
 
-if [ "$1" == "t" ] ; then
-  ./build_tfa.sh $2 $3 $4
-  exit
-fi
-if [ "$1" == "u" ] ; then
-  ./build_uboot.sh $2 $3 $4
-  exit
-fi
-if [ "$1" == "f" ] ; then
-  ./build_flashwriter.sh $2 $3 $4
-  exit
-fi
-if [ "$1" == "k" ] ; then
-  ./build_kernel.sh $2 $3 $4
-  exit
-fi
-if [ "$1" == "m" ] ; then
-  ./build_mm.sh $2 $3 $4
-  exit
-fi
-
-
 if [ "$1" == "s" ] ; then
 
   # Check for required Host packages
@@ -244,15 +222,38 @@ if [ "$1" == "s" ] ; then
   # Set defaults for Flash Writer script
   save_setting TFA_FIP $TFA_FIP
 
+  exit
 fi
 
 # Toolchain Selection GUI
-
 if [ "$1" == "tc" ] ; then
 
   # Select common toolchain
   select_toolchain "COMMON_TOOLCHAIN_SETUP_NAME" "COMMON_TOOLCHAIN_SETUP"
   save_setting COMMON_TOOLCHAIN_SETUP_NAME "\"$COMMON_TOOLCHAIN_SETUP_NAME\""
   save_setting COMMON_TOOLCHAIN_SETUP "\"$COMMON_TOOLCHAIN_SETUP\""
-
+  exit
 fi
+
+# Call individual sub-scripts
+if [ "$1" == "t" ] ; then
+  ./build_tfa.sh $2 $3 $4
+  exit
+fi
+if [ "$1" == "u" ] ; then
+  ./build_uboot.sh $2 $3 $4
+  exit
+fi
+if [ "$1" == "f" ] ; then
+  ./build_flashwriter.sh $2 $3 $4
+  exit
+fi
+if [ "$1" == "k" ] ; then
+  ./build_kernel.sh $2 $3 $4
+  exit
+fi
+if [ "$1" == "m" ] ; then
+  ./build_mm.sh $2 $3 $4
+  exit
+fi
+

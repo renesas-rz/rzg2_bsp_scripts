@@ -106,6 +106,12 @@ read_setting() {
     echo -e "\nERROR: Settings file ($SETTINGS_FILE) not found."
     exit
   fi
+
+  # Convert OUT_DIR from relative path to full path
+  if [ "${OUT_DIR:0:1}" != "/" ] ; then
+    export OUT_DIR="$(pwd)/$OUT_DIR"
+  fi
+
 }
 
 # $1 = env variable to save

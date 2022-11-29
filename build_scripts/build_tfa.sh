@@ -234,24 +234,24 @@ create_fip_and_copy() {
   fi
 
   echo -e "[Create fip.bin]"
-  tools/fiptool/fiptool create --align 16 --soc-fw build/${PLATFORM}/$BUILD_DIR/bl31.bin --nt-fw ../$OUT_DIR/u-boot.bin fip.bin
-  cp fip.bin ../$OUT_DIR/fip-${MACHINE}${EXTRA}.bin
+  tools/fiptool/fiptool create --align 16 --soc-fw build/${PLATFORM}/$BUILD_DIR/bl31.bin --nt-fw $OUT_DIR/u-boot.bin fip.bin
+  cp fip.bin $OUT_DIR/fip-${MACHINE}${EXTRA}.bin
 
   echo -e "[Copy BIN file]"
-  cp -v build/${PLATFORM}/$BUILD_DIR/bl2_bp.bin ../$OUT_DIR/bl2_bp-${MACHINE}${EXTRA}.bin
+  cp -v build/${PLATFORM}/$BUILD_DIR/bl2_bp.bin $OUT_DIR/bl2_bp-${MACHINE}${EXTRA}.bin
 
   echo -e "[Copy BIN file (no boot parameters)]"
-  cp -v build/${PLATFORM}/$BUILD_DIR/bl2.bin ../$OUT_DIR/bl2-${MACHINE}${EXTRA}.bin
+  cp -v build/${PLATFORM}/$BUILD_DIR/bl2.bin $OUT_DIR/bl2-${MACHINE}${EXTRA}.bin
 
   echo -e "[Copy boot parameters]"
-  cp -v build/${PLATFORM}/$BUILD_DIR/bootparams.bin ../$OUT_DIR/bootparams-${MACHINE}${EXTRA}.bin
+  cp -v build/${PLATFORM}/$BUILD_DIR/bootparams.bin $OUT_DIR/bootparams-${MACHINE}${EXTRA}.bin
 
   echo -e "[Convert BIN to SREC format]"
   #<BL2>
-  ${CROSS_COMPILE}objcopy -I binary -O srec --adjust-vma=0x00011E00 --srec-forceS3 build/${PLATFORM}/$BUILD_DIR/bl2_bp.bin ../$OUT_DIR/bl2_bp-${MACHINE}${EXTRA}.srec
+  ${CROSS_COMPILE}objcopy -I binary -O srec --adjust-vma=0x00011E00 --srec-forceS3 build/${PLATFORM}/$BUILD_DIR/bl2_bp.bin $OUT_DIR/bl2_bp-${MACHINE}${EXTRA}.srec
 
   #<FIP>
-  ${CROSS_COMPILE}objcopy -I binary -O srec --adjust-vma=0x00000000 --srec-forceS3 fip.bin ../$OUT_DIR/fip-${MACHINE}${EXTRA}.srec
+  ${CROSS_COMPILE}objcopy -I binary -O srec --adjust-vma=0x00000000 --srec-forceS3 fip.bin $OUT_DIR/fip-${MACHINE}${EXTRA}.srec
 }
 
 
@@ -450,7 +450,7 @@ BUILD_THREADS=$(expr $NPROC + $NPROC)
 echo "cd $TFA_DIR"
 cd $TFA_DIR
 
-if [ "$TFA_FIP" == "1" ] && [ ! -e "../$OUT_DIR/u-boot.bin" ] ; then
+if [ "$TFA_FIP" == "1" ] && [ ! -e "$OUT_DIR/u-boot.bin" ] ; then
   echo -e "\nERROR: You must build u-boot first since it is added to the BL31/FIP image".
   exit
 fi
@@ -726,31 +726,31 @@ echo -e "\nOutput files copied to directory $TFA_DIR_DEFAULT/$DEPLOYDIR\n"
 # copy to output directory
 if [ -e build/${PLATFORM}/release/bl2.bin ] && [ "$OUT_DIR" != "" ] ; then
 
-  mkdir -p ../$OUT_DIR
-  cp build/${PLATFORM}/release/bl2/bl2.elf   ../$OUT_DIR/bl2-${MACHINE}.elf
-  cp build/${PLATFORM}/release/bl2.bin       ../$OUT_DIR/bl2-${MACHINE}.bin
-  cp build/${PLATFORM}/release/bl2.srec      ../$OUT_DIR/bl2-${MACHINE}.srec
-  cp build/${PLATFORM}/release/bl31/bl31.elf ../$OUT_DIR/bl31-${MACHINE}.elf
-  cp build/${PLATFORM}/release/bl31.bin      ../$OUT_DIR/bl31-${MACHINE}.bin
-  cp build/${PLATFORM}/release/bl31.srec     ../$OUT_DIR/bl31-${MACHINE}.srec
-  cp tools/renesas/rzg_layout_create/bootparam_sa0.srec   ../$OUT_DIR/bootparam_sa0.srec
-  cp tools/renesas/rzg_layout_create/cert_header_sa6.srec ../$OUT_DIR/cert_header_sa6.srec
+  mkdir -p $OUT_DIR
+  cp build/${PLATFORM}/release/bl2/bl2.elf   $OUT_DIR/bl2-${MACHINE}.elf
+  cp build/${PLATFORM}/release/bl2.bin       $OUT_DIR/bl2-${MACHINE}.bin
+  cp build/${PLATFORM}/release/bl2.srec      $OUT_DIR/bl2-${MACHINE}.srec
+  cp build/${PLATFORM}/release/bl31/bl31.elf $OUT_DIR/bl31-${MACHINE}.elf
+  cp build/${PLATFORM}/release/bl31.bin      $OUT_DIR/bl31-${MACHINE}.bin
+  cp build/${PLATFORM}/release/bl31.srec     $OUT_DIR/bl31-${MACHINE}.srec
+  cp tools/renesas/rzg_layout_create/bootparam_sa0.srec   $OUT_DIR/bootparam_sa0.srec
+  cp tools/renesas/rzg_layout_create/cert_header_sa6.srec $OUT_DIR/cert_header_sa6.srec
 
   echo -e "\nOutput files copied to output directory $OUT_DIR\n"
 
   # Save what this was build with
-  echo "MACHINE=$MACHINE" > ../$OUT_DIR/manifest_tfa.txt
-  echo "BOARD_VERSION=$BOARD_VERSION" > ../$OUT_DIR/manifest_tfa.txt
-  echo "TFA_BOOT=$TFA_BOOT" >> ../$OUT_DIR/manifest_tfa.txt
-  echo "TFA_LOG_LEVEL=$TFA_LOG_LEVEL" >> ../$OUT_DIR/manifest_tfa.txt
-  echo "TFA_ECC_FULL=$TFA_ECC_FULL" >> ../$OUT_DIR/manifest_tfa.txt
-  echo "TFA_TOOLCHAIN_SETUP_NAME=$TFA_TOOLCHAIN_SETUP_NAME" >> ../$OUT_DIR/manifest_tfa.txt
+  echo "MACHINE=$MACHINE" > $OUT_DIR/manifest_tfa.txt
+  echo "BOARD_VERSION=$BOARD_VERSION" > $OUT_DIR/manifest_tfa.txt
+  echo "TFA_BOOT=$TFA_BOOT" >> $OUT_DIR/manifest_tfa.txt
+  echo "TFA_LOG_LEVEL=$TFA_LOG_LEVEL" >> $OUT_DIR/manifest_tfa.txt
+  echo "TFA_ECC_FULL=$TFA_ECC_FULL" >> $OUT_DIR/manifest_tfa.txt
+  echo "TFA_TOOLCHAIN_SETUP_NAME=$TFA_TOOLCHAIN_SETUP_NAME" >> $OUT_DIR/manifest_tfa.txt
   CURRENT_BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-  echo "Built from branch \"$CURRENT_BRANCH\"" >> ../$OUT_DIR/manifest_tfa.txt
+  echo "Built from branch \"$CURRENT_BRANCH\"" >> $OUT_DIR/manifest_tfa.txt
 
 
   # Use the same filenames as the Yocto output
-  #cp -v $OUT/u-boot.bin ../$OUT_DIR/u-boot-${MACHINE}.bin
-  #cp -v $OUT/u-boot.srec ../$OUT_DIR//u-boot-${MACHINE}.srec
+  #cp -v $OUT/u-boot.bin $OUT_DIR/u-boot-${MACHINE}.bin
+  #cp -v $OUT/u-boot.srec $OUT_DIR//u-boot-${MACHINE}.srec
 fi
 
