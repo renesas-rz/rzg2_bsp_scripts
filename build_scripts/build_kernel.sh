@@ -83,8 +83,20 @@ fi
 echo "cd $KERNEL_DIR"
 cd $KERNEL_DIR
 
-echo "$KERNEL_TOOLCHAIN_SETUP"
-eval $KERNEL_TOOLCHAIN_SETUP
+if [ "${KERNEL_TOOLCHAIN_SETUP_NAME:0:4}" == "Poky" ] ; then
+  # The environment-setup script does not work with the kernel.
+  echo "INFO: Using Poky Toolchain binaries directly (not environment-setup)"
+
+  # Get path from KERNEL_TOOLCHAIN_SETUP
+  POKY_PATH=$(echo $KERNEL_TOOLCHAIN_SETUP | sed "s:source ::" | sed "s:/environment-setup-aarch64-poky-linux::" )
+
+  # Set path and CROSS_COMPILE, asm as if we were using Linaro
+  PATH=${POKY_PATH}/sysroots/x86_64-pokysdk-linux/usr/bin/aarch64-poky-linux:$PATH
+  export CROSS_COMPILE="aarch64-poky-linux-"
+else
+  echo "$KERNEL_TOOLCHAIN_SETUP"
+  eval $KERNEL_TOOLCHAIN_SETUP
+fi
 
 export ARCH=arm64
 
