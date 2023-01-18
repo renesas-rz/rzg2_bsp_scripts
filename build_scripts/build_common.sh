@@ -66,7 +66,7 @@ select_toolchain() {
   if [ "$array_linaro_size" != "0" ] ; then
     for i in $(seq $array_linaro_size) ; do
       #echo $i ${array_linaro[$((i-1))]}
-      tc_version=$(echo $(basename ${array_arm[$((i-1))]}) | sed "s/-x86.*//")
+      tc_version=$(echo $(basename ${array_linaro[$((i-1))]}) | sed "s/-x86.*//")
       tc_array_text+=("Linaro ($tc_version)")
       tc_array_setup+=("PATH=${array_linaro[$((i-1))]}/bin:\$PATH ; export CROSS_COMPILE=aarch64-linux-gnu-")
 
