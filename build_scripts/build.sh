@@ -178,7 +178,7 @@ if [ "$1" == "s" ] ; then
       ;;
       6\ *) FW_BOARD=RZG2LC_SMARC ; MACHINE=smarc-rzg2lc ; MPU=RZG2LC ; TFA_FIP=1 ;;
       7\ *) FW_BOARD=RZG2UL_SMARC ; MACHINE=smarc-rzg2ul ; MPU=RZG2UL ; TFA_FIP=1 ;;
-      8\ *) FW_BOARD=RZV2L_SMARC ; MACHINE=smarc-rzv2l ; MPU=RZVG2L ; TFA_FIP=1
+      8\ *) FW_BOARD=RZV2L_SMARC ; MACHINE=smarc-rzv2l ; MPU=RZV2L ; TFA_FIP=1
 	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?\n\nThe PMIC version has \"Reneas\" printed in the middle of the SOM board.\nThe Discrete version has \"Renesas\" printed at the edge of the SOM baord.   " 0 0 0
 	if [ "$?" == "0" ] ; then
 		BOARD_VERSION="PMIC"
