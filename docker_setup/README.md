@@ -1,10 +1,16 @@
 # Using Docker to Build the RZ/G2 BSP
 
-The RZ/G2 BSP (VLP64) uses Yocto 2.4 Rocko to build.
+The RZ/G BSPs are distributed as Yocto builds. However, Yocto versions are limited to what host OS version you can use.
 
-Yocto 2.4 only officially supports up to Ubuntu 16.04, but the RZ/G2 BSP has also been tested with Ubuntu 18.04.
+Below are the Linux PC hosts that the BSPs are tested with. Using a version other than these is not recommended.
 
-These instructions explain how to install and set up docker so that you can build the BSP inside a Ubuntu 16.04 or 18.04  docker container.
+* Yocto 3.1 Dunfell should be built with Ubuntu 20.04.
+* Yocto 2.4 Rocko should be built with Ubuntu 18.04 (recommended) or Ubuntu 16.04.
+
+A docker container will allow you to replicate the same build environment (Ubuntu OS version) without having to modify your current running host OS version.
+These instructions explain how to install and set up docker so that you can build the BSP inside a docker container of the correct Ubuntu version.
+
+The container only requires 1GB - 2GB of hard drive space. So it is much more efficient than installing a complete virtual machine. Additionally, using the instructions we will explain here, you will get to keep all your build files in your existing file system making them easy to access (as opposed to hidden inside a virtual machine).
 
 ## 1. About Docker
 A Dockerfile describes the contents of a Docker image, and a Docker container is an instance of the image. Docker
@@ -46,97 +52,78 @@ Doing so for the directories involved with ID and permissions makes your contain
 
 ## 2. Docker Install
 
-###  2.1 Add the docker repository (only required for Ubuntu 18.04 hosts)
+### 2.1 Follow the Instructions on the Docker Website
 
-Docker is not available in the standard Ubuntu 18.04 download repositories,so you will have to download it directly from docker.
-If your host machine is Ubuntu 20.04, you can skip this step.
+The Docker installation packages available in the official Ubuntu repositories may not be the latest version.
 
-Copy/paste the following command to add the docker repository to the list of available download sources.
+To ensure you get the latest version, it is better to install Docker from the official Docker repository.
 
+The instructions on the docker website are very easy to follow. They are simply copy/paste.
+We recommend to use the  [Install using the apt repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) method.
+* https://docs.docker.com/engine/install/ubuntu
+
+### 2.2 Check if docker is running
 <pre>
-$ sudo apt update
-$ sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
-$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-$ sudo apt-key fingerprint 0EBFCD88
-
-	pub   rsa4096 2017-02-22 [SCEA]
-	      9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
-	uid           [ unknown] Docker Release (CE deb) <docker@docker.com>
-	sub   rsa4096 2017-02-22 [S
-
-$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+$ sudo systemctl status docker --no-pager
 </pre>
-
-###  2.2 Install the Docker Engine
-
-Copy/paste the following commands to install the docker (community edition).
-
-Ubuntu 18.04:
-```
-$ sudo apt-get update
-$ sudo apt-get install docker-ce docker-ce-cli containerd.io
-```
-
-Ubuntu 20.04:
-```
-$ sudo apt-get update
-$ sudo apt-get install docker.io
-```
-(Optional, just to see if it installed)
-```
-$ sudo docker run hello-world
-```
-
-### 2.3 Check if docker is running (optional)
-```
-$ sudo systemctl status docker
-```
-**NOTE**: The command above puts you into a 'vi' editor, so you need to do this vi sequence to exit:  [ESC]  +   [ : ]  + [  q  ]  + [ENTER]
 Here is what you will see:
 <pre>
-	chris$ sudo systemctl status docker
-	\u25cf docker.service - Docker Application Container Engine
-	   Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
-	   Active: active (running) since Mon 2020-04-13 07:49:12 EDT; 4 days ago
-		 Docs: https://docs.docker.com
-	 Main PID: 2509 (dockerd)
-		Tasks: 22
-	   CGroup: /system.slice/docker.service
-			   \u2514\u25002509 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+chris$ sudo systemctl status docker --no-pager
+● docker.service - Docker Application Container Engine
+     Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+     Active: active (running) since Mon 2023-03-20 17:06:04 EDT; 4min 53s ago
+TriggeredBy: ● docker.socket
+       Docs: https://docs.docker.com
+   Main PID: 1403652 (dockerd)
+      Tasks: 22
+     Memory: 28.5M
+        CPU: 732ms
+     CGroup: /system.slice/docker.service
+             └─1403652 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
 
-	Apr 13 07:49:12 lenovo-p330 dockerd[2509]: time="2020-04-13T07:49:12.412197282-04:00" level=info msg="Loading containers: start."
-	Apr 13 07:49:12 lenovo-p330 dockerd[2509]: time="2020-04-13T07:49:12.436198563-04:00" level=warning msg="6129a9d87b19c0427ad4af0dc3fb9aba275ea05056705f7a6788ac435
-	Apr 13 07:49:12 lenovo-p330 dockerd[2509]: time="2020-04-13T07:49:12.641389384-04:00" level=info msg="Removing stale sandbox 3346937d1da7290f0f597bd7ad4afd9d59e0c
-	Apr 13 07:49:12 lenovo-p330 dockerd[2509]: time="2020-04-13T07:49:12.646117840-04:00" level=warning msg="Error (Unable to complete atomic operation, key modified)
-	Apr 13 07:49:12 lenovo-p330 dockerd[2509]: time="2020-04-13T07:49:12.701050867-04:00" level=info msg="Default bridge (docker0) is assigned with an IP address 172.
-	Apr 13 07:49:12 lenovo-p330 dockerd[2509]: time="2020-04-13T07:49:12.772810325-04:00" level=info msg="Loading containers: done."
-	Apr 13 07:49:12 lenovo-p330 dockerd[2509]: time="2020-04-13T07:49:12.842487009-04:00" level=info msg="Docker daemon" commit=633a0ea838 graphdriver(s)=overlay2 ver
-	Apr 13 07:49:12 lenovo-p330 dockerd[2509]: time="2020-04-13T07:49:12.842918272-04:00" level=info msg="Daemon has completed initialization"
-	Apr 13 07:49:12 lenovo-p330 dockerd[2509]: time="2020-04-13T07:49:12.876262101-04:00" level=info msg="API listen on /var/run/docker.sock"
-	Apr 13 07:49:12 lenovo-p330 systemd[1]: Started Docker Application Container Engine.
+Mar 20 17:06:03 lenovo-p330 dockerd[1403652]: time="2023-03-20T17:06:03.745478376-04:00" level=info msg="successfully migrated engine ID"
+Mar 20 17:06:03 lenovo-p330 dockerd[1403652]: time="2023-03-20T17:06:03.745999477-04:00" level=info msg="Loading containers: start."
+Mar 20 17:06:04 lenovo-p330 dockerd[1403652]: time="2023-03-20T17:06:04.501721035-04:00" level=info msg="Default bridge (docker0) is assigned with an …IP address"
+Mar 20 17:06:04 lenovo-p330 dockerd[1403652]: time="2023-03-20T17:06:04.619526298-04:00" level=info msg="Loading containers: done."
+Mar 20 17:06:04 lenovo-p330 dockerd[1403652]: time="2023-03-20T17:06:04.650188695-04:00" level=info msg="Docker daemon" commit=bc3805a graphdriver=ove…sion=23.0.1
+Mar 20 17:06:04 lenovo-p330 dockerd[1403652]: time="2023-03-20T17:06:04.650327945-04:00" level=info msg="Daemon has completed initialization"
+Mar 20 17:06:04 lenovo-p330 dockerd[1403652]: time="2023-03-20T17:06:04.677493145-04:00" level=info msg="[core] [Server #7] Server created" module=grpc
+Mar 20 17:06:04 lenovo-p330 systemd[1]: Started Docker Application Container Engine.
+Mar 20 17:06:04 lenovo-p330 dockerd[1403652]: time="2023-03-20T17:06:04.681668958-04:00" level=info msg="API listen on /run/docker.sock"
+Mar 20 17:07:07 lenovo-p330 dockerd[1403652]: time="2023-03-20T17:07:07.853245569-04:00" level=info msg="ignoring event" container=011f6b4af0addd88ac3…TaskDelete"
+Hint: Some lines were ellipsized, use -l to show in full.
 </pre>
 
-### 2.4 Add yourself to docker group
+### 2.3 Add yourself to docker group
 This is so you do not have to 'sudo docker' every time to run docker.
 This is not a technical required, but it is highly recommended.
 
-```
+<pre>
 $ sudo usermod -a -G docker ${USER}
-```
+</pre>
 
 Then, completely **log out** of your account and log back in (or you could run "$ su - ${USER}"  to avoid having to logout/reboot just  this one time)
 
 Check that you are part of the docker group now:
 
-```
+<pre>
 $ id -nG | grep docker
-```
+</pre>
+
+Verify that you can run docker commands without sudo.
+<pre>
+ docker run hello-world
+</pre>
+
 Docker install is complete.
 
+You can find other configuration here: https://docs.docker.com/engine/install/linux-postinstall/
 
 
 ## 3. Create an Image using a Dockerfile (Recommended)
-The easiest way to create a Ubuntu 16.04 or Ubuntu 18.04 container with everything you need to build the BSP is to use a dockerfile created by Renesas.
+The easiest way to create a Ubuntu container with everything you need to build the BSP is to use a "dockerfile" created by Renesas.
+
+A dockerfile is like a script that will automate entering command configuring your container.
 
 ### 3.1 Build an Image
 
@@ -145,10 +132,15 @@ First we need to build an docker "Image". We will use a default Ubuntu image fro
 To create this image, we will use a "dockerfile" which is a set of commands that will set up our container for us.<br>
 The full step by step instructions of what the dockerfile did is explained at the end this document if you are interested.
 
-Copy/Paste the lines below and change them how you need.<br>
+Copy/Paste the lines below and change them how you need.
 
-* You may change the tag name "rzg\_ubuntu-18.04" to whatever you want.
-* You may choose to use dockerfile "Dockerfile.rzg\_ubuntu-18.04" or "Dockerfile.rzg\_ubuntu-16.04" 
+* You may change the tag name "rz\_ubuntu-20.04" to whatever you want.
+* Select the dockerfile that matches the Ubunut version you wish to install:
+ * "Dockerfile.rzg\_ubuntu-20.04" 
+ * "Dockerfile.rzg\_ubuntu-18.04" 
+ * "Dockerfile.rzg\_ubuntu-16.04" 
+* The docker file will download a minimal version of the Ubunut version you need, and will also install any additional packages needed to build the Renesas BSP.
+* The dockerfiles are just text files, so feel free to open them up and see what they are doing.
 
 <pre>
 docker build --no-cache \
@@ -156,16 +148,16 @@ docker build --no-cache \
   --build-arg "host_gid=$(id -g)" \
   --build-arg "USERNAME=$USER" \
   --build-arg "TZ_VALUE=$(cat /etc/timezone)" \
-  --tag rzg_ubuntu-18.04 \
-  --file Dockerfile.rzg_ubuntu-18.04  .
+  --tag rz_ubuntu-20.04 \
+  --file Dockerfile.rzg_ubuntu-20.04  .
 </pre>
 
 Confirm your image was created.
 
 <pre>
 $ docker images
-REPOSITORY           TAG                 IMAGE ID            CREATED             SIZE
-rzg_ubuntu-18.04     latest              6198b18dd2c1        10 minutes ago      1.13GB
+REPOSITORY           TAG       IMAGE ID       CREATED          SIZE
+rz_ubuntu-20.04      latest    960cf1be32b0   57 seconds ago   1.25GB
 </pre>
 
 
@@ -173,7 +165,7 @@ rzg_ubuntu-18.04     latest              6198b18dd2c1        10 minutes ago     
 
 Now that we have created our docker image, we can start a container based off that image.
 
-Here is an explanation of each argument.
+Here is an explanation of each argument. Pay special attention to the "--volume" argument because you want your older Ubuntu OS to run inside the container, but want to keep all your build files outside of the container.
 
 * **docker run** : Run a processes in isolated container
 * **-it** : Starts a command shell inside your container so you can interact with it
@@ -185,10 +177,10 @@ Here is an explanation of each argument.
 mkdir -p /home/$USER/yocto
 
 docker run -it \
-  --name=my_ubuntu_18.04_for_rzg \
+  --name=my_container_for_20.04 \
   --volume="/home/$USER/yocto:/home/$USER/yocto" \
   --workdir="/home/$USER" \
-  rzg_ubuntu-18.04
+  rz_ubuntu-20.04
 </pre>
 
 You will now be running in a command line shell inside your container.
@@ -204,7 +196,8 @@ Next we will explain more about how to use your container.
 ## 4. Using your Container
 
 ### 4.1 Start your Container Running
-If it is stopped, it will not show up in 'docker ps'
+Containers must be running before you can enter and use them.<br>
+If it is stopped, it will not show up when running the 'docker ps' command.<br>
 After each system restart, you will need to start up your container again. You can use 'docker ps -a' if you've forgotten the name or ID of your containers.
 
 This command will show you all your **running** containers
@@ -220,7 +213,7 @@ $ docker ps -a
 Use this command to **start** your container. Use the name you gave it during the "docker run" command.<br>
 You can use the 'docker ps' command to confirm it is up and running.
 <pre>
-$ docker start my_ubuntu_18.04_for_rzg
+$ docker start my_container_for_20.04
 $ docker ps
 </pre>
 
@@ -230,18 +223,18 @@ $ docker ps
 During the creation and setup of your container, you created a user account with the same name as your host machine.<br>
 When entering into your container, use that user account (not root).
 What the command 'docker exec -it /bin/bash' does it start up a command shell inside your running container. 
-```
-$ docker exec -it my_ubuntu_18.04_for_rzg /bin/bash
-```
+<pre>
+$ docker exec -it my_container_for_20.04 /bin/bash
+</pre>
 
 ### 4.2 Exit the Container
 
 Since you are just running a bash shell inside your container, you can type 'exit' to leave your container.
 
 
-```
+<pre>
 $ exit
-```
+</pre>
 
 ### 4.3 Using tmux Inside the Container
 
@@ -251,9 +244,9 @@ However, you can run 'tumx' which emulates a standard terminal and then things (
 
 Simply run this command each time you enter the container (before you start to do any Yocto work)
 
-```
+<pre>
 $ tmux
-```
+</pre>
 
 You type **exit** to leave tmux.
 
