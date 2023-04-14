@@ -1,3 +1,16 @@
+# Flash Writer Tool
+* A script for automating the programming of boot loaders using the Renesas rzg2_flash_writer software utility.
+
+## Supported Renesas evaluation boards
+* RZ/G2H HiHope
+* RZ/G2M HiHope
+* RZ/G2N HiHope
+* RZ/G2E EK874
+* RZ/G2L SMARC
+* RZ/G2LC SMARC
+* RZ/G2UL SMARC
+* RZ/V2L SMARC
+
 ## Program Bootloaders using internal ROM and Flashwriter
 
 ### Description
@@ -43,7 +56,7 @@ $ ./flash_writer_tool.sh my_config.ini atf
 $ ./flash_writer_tool.sh my_config.ini u-boot
 </pre>
 <pre>
-# RZ/G2L:
+# RZ/G2L, RZ/G2LC, RZ/G2UL, RZ/V2L:
 $ ./flash_writer_tool.sh my_config.ini fw
 $ ./flash_writer_tool.sh my_config.ini atf
 </pre>

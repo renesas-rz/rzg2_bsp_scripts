@@ -4,6 +4,25 @@
 </HEAD>
 <BODY style="font-family: Arial">
 
+<h1>Flash Writer Tool</h1><hr>
+
+<ul>
+<li>A script for automating the programming of boot loaders using the Renesas rzg2<em>flash</em>writer software utility.</li>
+</ul>
+
+<h2>Supported Renesas evaluation boards</h2><hr>
+
+<ul>
+<li>RZ/G2H HiHope</li>
+<li>RZ/G2M HiHope</li>
+<li>RZ/G2N HiHope</li>
+<li>RZ/G2E EK874</li>
+<li>RZ/G2L SMARC</li>
+<li>RZ/G2LC SMARC</li>
+<li>RZ/G2UL SMARC</li>
+<li>RZ/V2L SMARC</li>
+</ul>
+
 <h2>Program Bootloaders using internal ROM and Flashwriter</h2><hr>
 
 <h3>Description</h3>
@@ -65,7 +84,7 @@ $ ./flash_writer_tool.sh my_config.ini u-boot
 </pre>
 
 <pre style="background-color: #F6F8FA">
-# RZ/G2L:
+# RZ/G2L, RZ/G2LC, RZ/G2UL, RZ/V2L:
 $ ./flash_writer_tool.sh my_config.ini fw
 $ ./flash_writer_tool.sh my_config.ini atf
 </pre>
