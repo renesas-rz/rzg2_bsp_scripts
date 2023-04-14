@@ -142,6 +142,7 @@ config_hash() {
   "$BOARD_VERSION" \
   "$FLASH" \
   "$SERIAL_DEVICE_INTERFACE" \
+  "$SERIAL_DEVICE_SPEED" \
   "$FILES_DIR" \
   "$FLASHWRITER" \
   "$FW_PREBUILT" \
@@ -438,6 +439,22 @@ do_menu_dev() {
   set_fw_binary
 }
 
+do_menu_speed() {
+  SELECT=$(whiptail --title "Interface Speed Selection" --menu "You may use ESC+ESC to cancel." 0 0 0 \
+	"1 115200" "  Default for all devices" \
+	"2 921600" "  Issue SUP command before downloads" \
+	3>&1 1>&2 2>&3)
+  RET=$?
+  if [ $RET -eq 0 ] ; then
+    case "$SELECT" in
+      1\ *) SERIAL_DEVICE_SPEED="115200" ;;
+      2\ *) SERIAL_DEVICE_SPEED="921600" ;;
+      *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+    esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
+  fi
+}
+
+
 do_menu_colors() {
   SELECT=$(whiptail --title "GUI menu colors" --menu "You may use ESC+ESC to cancel.\n\nSelect the color theme you want to use" 0 0 0 \
 	"1  Default" " " \
@@ -679,6 +696,8 @@ do_cmd_sw() {
 }
 
 do_cmd() {
+	export SERIAL_DEVICE_SPEED=$SERIAL_DEVICE_SPEED
+
 	echo "BOARD=$BOARD FLASH=$FLASH SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE ./flash_writer_tool.sh $CMD $FILE_TO_SEND"
 	BOARD=$BOARD FLASH=$FLASH SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE FW_GUI_MODE=2 ./flash_writer_tool.sh $CMD $FILE_TO_SEND
 }
@@ -762,6 +781,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 
     # default values
     SERIAL_DEVICE_INTERFACE="/dev/ttyUSB0"
+    SERIAL_DEVICE_SPEED=115200
     FLASH="0"
     CONFIG_FILE="config.ini"
   fi
@@ -864,6 +884,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 	"               Board:" "  $BOARD_NAME"  \
 	"        Target Flash:" "  ${FLASH_TEXT[$FLASH]}" \
 	"           Interface:" "  $SERIAL_DEVICE_INTERFACE  ($DL_TYPE)"  \
+	"               Speed:" "  $SERIAL_DEVICE_SPEED"  \
 	"         Config File:" "  $CONFIG_FILE"  \
 	"      Extra Settings:" "  GUI Colors, windows size, etc..."  \
 	"_______Files_________" "" \
@@ -898,6 +919,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
         echo "BOARD_VERSION=$BOARD_VERSION" >> $CONFIG_FILE
         echo "FLASH=$FLASH" >> $CONFIG_FILE
         echo "SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE" >> $CONFIG_FILE
+        echo "SERIAL_DEVICE_SPEED=$SERIAL_DEVICE_SPEED" >> $CONFIG_FILE
 
         echo "FILES_DIR=$FILES_DIR" >> $CONFIG_FILE
         echo "FW_PREBUILT=$FW_PREBUILT" >> $CONFIG_FILE
@@ -919,6 +941,11 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
         echo -e "\n# Whiptail colors\nexport NEWT_COLORS='""$NEWT_COLORS""'" >> settings.txt
       fi
 
+      if [ "$SERIAL_DEVICE_SPEED" == "921600" ] ; then
+        # Put baud rate back to default
+        stty -F $SERIAL_DEVICE_INTERFACE 115200
+      fi
+
       break;
     elif [ $RET -eq 0 ] ; then
       LAST_SELECT="$SELECT"
@@ -926,6 +953,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
         *Board:*) do_menu_board ;;
         *Target\ Flash:*) do_menu_target_flash ;;
         *Interface:*) do_menu_dev ;;
+        *Speed:*) do_menu_speed ;;
         *Config\ File:*) do_menu_config ;;
         *Extra\ Settings:*) do_menu_extra ;;
 
@@ -1305,6 +1333,22 @@ if [ "$CMD" == "sw" ] ; then
 	switch_settings
 	printf '%s\n' "$SW_SETTINGS"
 	exit
+fi
+
+############################################
+echo "SERIAL_DEVICE_SPEED = $SERIAL_DEVICE_SPEED"
+# Change to faster baud rate if needed
+if [ "$SERIAL_DEVICE_SPEED" == "921600" ] ; then
+	# Check if already running fast
+	stty -F $SERIAL_DEVICE_INTERFACE | grep -q 921600 
+	if [ "$?" != "0" ] ; then
+		# send SUP command 
+		echo -en "SUP\r" > $SERIAL_DEVICE_INTERFACE
+		sleep 1
+			# Switch to high speed
+		stty -F $SERIAL_DEVICE_INTERFACE 921600
+		sleep 0.5
+	fi
 fi
 
 if [ "$CMD" == "emmc_config" ] ; then
