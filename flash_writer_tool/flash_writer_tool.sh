@@ -1108,6 +1108,9 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 	"i. $OP1 Program All     " "  Programs all files (SA0,BL2,SA6,BL31 and u-boot)" \
 	"j. $OP4 eMMC boot setup " "  Configure an eMMC device for booting (only needed once)" \
 	"s. $FWR Show switches   " "  Show the switch settings for Renesas boards (in case you forgot)" \
+	"x1. $OP1 Erase BootPart1 " "  Erases eMMC Boot Partition 1 (needed when re-flashing to clear u-boot)" \
+	"x2. $OP1 Erase BootPart2 " "  Erases eMMC Boot Partition 2 (needed when re-flashing to clear u-boot env)" \
+	"x0. $OP1 Erase UserPart  " "  Erases eMMC User Partition 0 (optional)" \
 	3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ] ; then
@@ -1154,6 +1157,9 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 
         *Download\ F.W.*) whiptail --title "Download mode" --msgbox "Make sure the board is configured for \"SCIF Download mode\" or \"USB Download mode\"\n\nPower on the board and press the RESET button.\n\nThen, press ENTER on the keyboard to continue." 0 0 ;
 		CMD=fw FILE_TO_SEND=$FLASHWRITER ; do_cmd ; export FW_NOT_DL_YET=0 ;;
+        *Erase\ UserPart*) CMD=x0 ; FILE_TO_SEND= ; do_cmd ;;
+        *Erase\ BootPart1*) CMD=x1 ; FILE_TO_SEND= ; do_cmd ;;
+        *Erase\ BootPart2*) CMD=x2 ; FILE_TO_SEND= ; do_cmd ;;
         *Program\ SA0*) if [ "$FIP" == "1" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=sa0 ; FILE_TO_SEND=$SA0_FILE ; do_cmd ; fi ;;
         *Program\ BL2*) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=bl2 ; FILE_TO_SEND=$BL2_FILE ; do_cmd ; fi ;;
         *Program\ SA6*) if [ "$FIP" == "1" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=sa6 ; FILE_TO_SEND=$SA6_FILE ; do_cmd ; fi ;;
@@ -1250,6 +1256,27 @@ do_xls3() {
 	# just in case. So if the flash is already blank you will just see an
 	# extra 'command not found' message which does not hurt anything.
 	echo -en "y\r" > $SERIAL_DEVICE_INTERFACE
+	sleep $CMD_DELAY
+	echo ""
+}
+
+# do_em_e
+# $1 = partition number
+do_em_e() {
+	if [ "$1" == "0" ] ; then
+		echo "Erasing 0 (User Partition Area on eMMC)"
+	elif [ "$1" == "1" ] ; then
+		echo "Erasing 1 (Boot Partition 1 on eMMC)"
+	elif [ "$1" == "2" ] ; then
+		echo "Erasing 2 (Boot Partition 2 on eMMC)"
+	else
+		echo "Invalid partition number '$1'"
+		return 1
+	fi
+	echo "Sending EM_E command..."
+	echo -en "EM_E\r" > $SERIAL_DEVICE_INTERFACE
+	sleep $CMD_DELAY
+	echo -en "$1\r" > $SERIAL_DEVICE_INTERFACE
 	sleep $CMD_DELAY
 	echo ""
 }
@@ -1360,6 +1387,9 @@ print_usage() {
 	echo "config file         # If no file specified, config.ini is assumed"
 	echo "$0 fw               # Downloads the flash writer program after RESET (must be run first)"
 	echo ""
+	echo "$0 x0               # erases User Partition Area on eMMC"
+	echo "$0 x1               # erases Boot Partition 1 on eMMC"
+	echo "$0 x2               # erases Boot Partition 2 on eMMC"
 	echo "$0 sa0              # programs SA0 (Boot Parameters)"
 	echo "$0 bl2              # programs BL2 (Trusted Boot Firmware)"
 	echo "$0 sa6              # programs SA6 (Cert Header)"
@@ -1571,6 +1601,18 @@ if [ "$CMD" == "emmc_config" ] ; then
 	sleep $CMD_DELAY
 fi
 
+
+if [ "$CMD" == "x0" ] || [ "$CMD" == "x1" ] || [ "$CMD" == "x2" ] ; then
+	if [ "$CMD" == "x0" ] ; then
+		do_em_e 0
+	fi
+	if [ "$CMD" == "x1" ] ; then
+		do_em_e 1
+	fi
+	if [ "$CMD" == "x2" ] ; then
+		do_em_e 2
+	fi
+fi
 
 if [ "$CMD" == "sa0" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP" == "0" ] ; then
 	if [ "$SA0_FILE" == "" ] && [ "$2" != "" ] ; then
