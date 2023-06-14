@@ -1,0 +1,426 @@
+; Copyright (C) 2021 RenesasrElectronics Corp.
+; 
+; This TeraTerm macro programs the first files starting with "bl2" and "fip"
+; stored in the "Binaries" folder, in the RZ/G2L QSPI FLASH or eMMC.
+; Both bin and srec files can be used but take in account that bin files
+; programming is significantly faster than srec.
+; The macro can optionally program the environment variables binary
+; (created with mkenvimage), only if the file is present in same "Binaries"
+; folder. The ENV_VAR_* parameters should be potentially modified and the macro
+; can program the parameters in the eMMC only.
+; Assuming the files are there, launch the script and then reset the device.
+; You probably just need to adjust the COM port and Flash Writer srec file name
+; as well as select QSPI or eMMC as target
+
+; ##################### Macro Parameters ############################
+
+; This is the Flash Writer srec.
+; If it is parameter is set to "" then Flash Writer is not sent
+; and it is expected to be already running
+FLASH_WRITER = "Flash_Writer_SCIF_RZG2L_SMARC_DDR4_2GB.mot"
+;FLASH_WRITER = "Flash_Writer_SCIF_RZG2UL_SMARC_DDR4_1GB_1PCS.mot"
+;FLASH_WRITER = "Flash_Writer_SCIF_RZFIVE_SMARC.mot"
+
+; COM port 
+COM = 17
+
+; Directory containing Binaries
+DIR = "Binaries/"
+
+
+; Program QSPI or eMMC. QSPI -> 1, eMMC -> 0
+QSPI_NOT_eMMC = 1
+
+; Remove any user dialog apart from error
+; 1 to remove dialogs, 0 to keep them
+UNATTENDED = 1
+
+; Use high baudrate (921600) instead of standard (115200)
+; Make sure that Flash Writer supports the "SUP" command
+USE_HIGH_BAUD = 1
+
+; Environment variables partition, 0=USER, 1=BOOT PARTITION 1, 2=BOOT PARTITION 2
+ENV_VAR_PART_NUM = "2"
+
+; Environment variables start sector
+ENV_VAR_START_ADDRESS = "FB00"
+
+; RZ/Five programming
+RZ_FIVE_NOT_ARM = 0
+
+; #### Normally you do not need to modify anything below this line ####
+
+; check if COM port number is passed via parameter, else use definition above
+comstr='/C='
+if paramcnt>1 then
+   strconcat comstr params[2]
+   ; messagebox params[2] "Debug"
+else
+   int2str comport COM
+   strconcat comstr comport
+endif
+
+; messagebox comstr "Debug"
+connect comstr
+
+testlink
+if result=0 then
+   messagebox "No COM port" "Error!"
+   disconnect 0
+   closett
+   end
+   exit
+endif
+if result=1 then
+   messagebox "No connection to COM port, is COM port already open?" "Error!"
+   disconnect 0
+   closett
+   end
+   exit
+endif
+
+; baudrate = 115200
+setbaud 12
+
+; get current base path
+getdir BASE_PATH
+strconcat BASE_PATH "\"
+
+; we're going to flash two or three files
+IMAGE_NUM=2
+IMAGE_ARR=IMAGE_NUM-1
+
+strdim PROGRAM_SIZE_TABLE IMAGE_NUM
+strdim FLASH_ADDRESS_TABLE IMAGE_NUM+2
+strdim FILE_NAME_TABLE IMAGE_NUM
+strdim TOP_ADDRESS_TABLE IMAGE_NUM
+intdim SREC_NOT_BIN_TABLE IMAGE_NUM
+
+; FLASH_ADDRESS_TABLE[X] (hardcoded)
+FLASH_ADDRESS_TABLE[0] = "00000"
+if RZ_FIVE_NOT_ARM then
+   FLASH_ADDRESS_TABLE[1] = "20000"
+else
+   FLASH_ADDRESS_TABLE[1] = "1D200"
+endif
+; eMMC sector
+FLASH_ADDRESS_TABLE[2] = "1"
+FLASH_ADDRESS_TABLE[3] = "100"
+
+; TOP_ADDRESS_TABLE[X] (hardcoded)
+TOP_ADDRESS_TABLE[0] = "11E00"
+TOP_ADDRESS_TABLE[1] = "00000"
+
+; FILE_NAME_TABLE[X]
+; get file names from Binaries folder.
+; first files starting with "bl2" and "fip" or "spl" and "fit" are used
+
+filenamebl2=DIR
+filenamefip=DIR
+filenameubootenv=DIR
+if RZ_FIVE_NOT_ARM then
+   extpatbl2='spl*.*'
+   strinsert extpatbl2 1 DIR
+   extpatfip='fit*.*'
+   strinsert extpatfip 1 DIR 
+else
+   extpatbl2='bl2*.*'
+   strinsert extpatbl2 1 DIR
+   extpatfip='fip*.*'
+   strinsert extpatfip 1 DIR 
+endif
+extpatubootenv='/u-boot*.*'
+strinsert extpatubootenv 1 DIR 
+
+findfirst dh extpatbl2 filename
+if dh=-1 then
+   messagebox "bl2/spl file does not exist, please copy a valid bl2 file in the Binaries folder" "Error!"
+   exit
+endif
+strconcat filenamebl2 filename 
+; debug only
+; messagebox filenamebl2 "Debug"
+
+; check whether srec or bin
+strscan filenamebl2 ".bin"
+if result<>0 then
+   ; messagebox "srec not bin =0 i.e. binary" "Debug"
+   SREC_NOT_BIN_TABLE[0]=0
+else
+   strscan filenamebl2 ".srec"
+   if result<>0 then
+       ; messagebox "srec not bin =1 i.e. srec" "Debug"
+       SREC_NOT_BIN_TABLE[0]=1
+   else
+       messagebox "Can't find a valid bl2.spl .srec or .bin" "Error!"
+	   exit
+   endif
+endif
+
+FILE_NAME_TABLE[0] = filenamebl2
+
+findfirst dh extpatfip filename
+if dh=-1 then
+   messagebox "fip/fit file does not exist, please copy a valid fip file in the Binaries folder"  "Error!"
+   exit
+endif
+strconcat filenamefip filename 
+; debug only
+; messagebox filenamefip "Debug"
+
+; check whether srec or bin
+strscan filenamefip ".bin"
+if result<>0 then
+   SREC_NOT_BIN_TABLE[1]=0
+else
+   strscan filenamefip ".srec"
+   if result<>0 then
+       SREC_NOT_BIN_TABLE[1]=1
+   else
+       messagebox "Can't find a valid fip/fit .srec or .bin" "Error!"
+	   exit
+   endif
+endif
+
+FILE_NAME_TABLE[1] = filenamefip
+
+findfirst dh extpatubootenv filename
+if dh=-1 then
+   PROGRAM_UBOOT_ENV_VAR=0
+else
+   PROGRAM_UBOOT_ENV_VAR=1
+   strconcat filenameubootenv filename 
+   ; debug only
+   ; messagebox filenameubootenv "Debug"
+
+   ; u-boot env file must be binary
+   strscan filenameubootenv ".bin"
+   if result=0 then
+      messagebox "Can't find a valid u-boot-env binary" "Error!"
+	  exit
+   endif
+endif
+
+FILE_NAME_ENV = filenameubootenv
+
+findclose dh
+
+strlen FLASH_WRITER
+if result=0 then
+   if UNATTENDED=0 then
+      messagebox "Please make sure that Flash Writer is already running " "User input needed"
+   endif
+else
+   if UNATTENDED=0 then
+      messagebox "Please configure SCIF boot [OFF-ON-OFF-ON] and then reset the board " "User input needed"
+      waitregex "please send !"
+   endif
+   FLASH_WRITER_PATH=BASE_PATH
+   strconcat FLASH_WRITER_PATH FLASH_WRITER
+   sendfile FLASH_WRITER_PATH 0
+endif
+
+setsync 1
+
+if USE_HIGH_BAUD=1 then
+   sendln "SUP"
+   waitregex "Please change to 921.6Kbps"
+   setbaud 921600 
+endif
+
+if QSPI_NOT_eMMC then
+   sendln "XCS"
+   waitregex "Clear OK?"
+   sendln "y"
+else
+   sendln "EM_E"
+   waitregex "Select area"
+   sendln "1"
+endif
+
+if QSPI_NOT_eMMC then
+   offset = 0
+else
+   offset = 2
+endif
+
+for i offset IMAGE_ARR+offset
+   FLASH_ADDRESS=FLASH_ADDRESS_TABLE[i]
+   FILE_NAME=FILE_NAME_TABLE[i-offset]
+   ; we don't need size with srec, rather top address
+   if SREC_NOT_BIN_TABLE[i-offset] then
+      TOP_ADDRESS=TOP_ADDRESS_TABLE[i-offset]
+   else
+      filestat FILE_NAME PROGRAM_SIZE_DEC
+	  call dec2hex
+	  PROGRAM_SIZE=PROGRAM_SIZE_HEX_STRING
+   endif
+   SREC_NOT_BIN=SREC_NOT_BIN_TABLE[i-offset]
+   call write_flash
+next
+
+if PROGRAM_UBOOT_ENV_VAR=1 then
+   call program_uboot_env_bin
+endif
+
+if UNATTENDED=0 then
+   messagebox "Macro executed successfully" "Done!"
+endif
+
+sendln "RESET"
+
+disconnect 0
+closett
+end
+exit
+
+; #####
+; Flash Writer
+; #####
+
+:launch_writer
+
+if SREC_NOT_BIN then
+   sendln "XLS2"
+   ; messagebox "XLS2" "Debug"
+else
+   sendln "XLS3"
+   ; messagebox "XLS3" "Debug"
+endif
+
+waitregex "Please Input"
+
+return
+; #####
+
+; #####
+:launch_writer_eMMC
+
+if SREC_NOT_BIN then
+   sendln "EM_W"
+   ; messagebox "EM_W" "Debug"
+else
+   sendln "EM_WB"
+   ; messagebox "EM_WB" "Debug"
+endif
+
+waitregex "Select area"
+sendln "1"
+
+waitregex "Please Input"
+sendln FLASH_ADDRESS
+
+return
+
+; #####
+:program_EXT_CSD
+; program boot options: PARTITION_CONFIG and BOOT_BUS_CONDITIONS
+
+sendln "EM_SECSD"
+waitregex "Please Input"
+sendln "b1"
+waitregex "Please Input"
+sendln "2"
+
+sendln "EM_SECSD"
+waitregex "Please Input"
+sendln "b3"
+waitregex "Please Input"
+sendln "8"
+
+return
+
+; #####
+:program_uboot_env_bin
+; program uboot environment variables binary
+
+sendln "EM_WB"
+; messagebox "EM_WB" "Debug"
+
+waitregex "Select area"
+sendln ENV_VAR_PART_NUM
+
+waitregex "Please Input Start Address"
+sendln ENV_VAR_START_ADDRESS
+
+filestat FILE_NAME_ENV PROGRAM_SIZE_DEC
+call dec2hex
+
+waitregex "Please Input File size"
+sendln PROGRAM_SIZE_HEX_STRING
+
+FILE_PATH=BASE_PATH
+strconcat FILE_PATH FILE_NAME_ENV
+
+waitregex "please send"
+sendfile FILE_PATH 1
+
+return
+
+; #####
+
+; #####
+;  PROGRAM_ADDRESS
+;  BASE_PATH
+;  FLASH_ADDRESS
+;  FILE_NAME
+; #####
+
+:write_flash
+if QSPI_NOT_eMMC then
+   call launch_writer
+else
+   call program_EXT_CSD
+   call launch_writer_eMMC
+endif
+
+if SREC_NOT_BIN then
+   sendln TOP_ADDRESS
+   waitregex "Please Input"
+   sendln FLASH_ADDRESS
+   waitregex "please send"
+else
+   sendln PROGRAM_SIZE
+   waitregex "Please Input"
+   if QSPI_NOT_eMMC then
+      sendln FLASH_ADDRESS
+      waitregex "please send"
+   endif
+endif
+
+FILE_PATH=BASE_PATH
+strconcat FILE_PATH FILE_NAME
+
+if SREC_NOT_BIN then
+   sendfile FILE_PATH 0
+else
+   sendfile FILE_PATH 1
+endif
+
+if QSPI_NOT_eMMC then
+   waitregex "SPI Data Clear"
+else
+   if SREC_NOT_BIN then
+      waitregex "EM_W Complete!"
+else
+      waitregex "EM_WB Complete!"
+   endif
+endif
+
+waitregex ">"
+
+return
+; #####
+
+; this is used to convert the file size in hex, since Flash Writer accepts hex only
+:dec2hex
+base=16
+PROGRAM_SIZE_HEX_STRING=''
+tmp=PROGRAM_SIZE_DEC      ;modified so not destructive of PROGRAM_SIZE_DEC 
+while tmp > 0
+   strcopy '0123456789ABCDEF' (tmp%base)+1 1 basedig
+   strconcat basedig PROGRAM_SIZE_HEX_STRING
+   PROGRAM_SIZE_HEX_STRING=basedig
+   tmp=tmp/base
+endwhile
+return
