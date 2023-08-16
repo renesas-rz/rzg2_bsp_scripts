@@ -38,15 +38,48 @@
 <h3>Using the GUI Menu Interface</h3>
 
 <ul>
+<li><strong>This is the recommended way of using this tool</strong></li>
 <li>When you run the flash_writer_tool.sh script without any arguments, it will operate in a GUI menu mode. In this interface, you can select the files you wish to program. You can also start the programming operations.</li>
 <li>Please select your <strong>Board</strong> and <strong>Target Flash</strong>  and <strong>Interface</strong> first, then choose the location (<strong>FILES_DIR</strong>) that contains your binary files to program.</li>
 <li>Your board configuration setting can be saved in a .ini file. You can using multiple different .ini files. By default, "config.ini" is chosen.</li>
-<li>GUI settings will be saved in the file "settings.txt",</li>
+<li><p>GUI settings will be saved in the file "settings.txt"</p></li>
+<li><p><strong>Setup Items</strong></p>
+
+<ul>
+<li><strong>Board:</strong> Select the board you are using. <strong>Do this first.</strong></li>
+<li><strong>Target Flash:</strong> Select SPI Flash or eMMC Flash</li>
+<li><strong>Interface:</strong> Select the serial interface for your board.</li>
+<li><strong>Speed:</strong> Serial baud rate. Select 115,200 or 921,600.</li>
+<li><strong>Config File:</strong> File to save your settings to.</li>
+<li><strong>Extra Settings:</strong> Fun stuff.</li>
+</ul></li>
+<li><strong>Files:</strong>
+<ul>
+<li>The "✓" symbol means the file exist. The "x" means the file is not detected.</li>
+<li><strong>FILES_DIR:</strong> Set this to the directory of your files to program.</li>
+<li><strong>FLASHWRITER:</strong> The filename of the Flash Writer binary</li>
+<li><strong>RZ/G2H, /G2N, /G2M, /G2E:</strong> Set SA0_FILE, BL2_FILE, SA6_FILE, BL31_FILE, UBOOT_FILE</li>
+<li><strong>RZ/G2L, /G2LC, /G2UL, /V2L:</strong> Set BL2_FILE, FIP_FILE</li>
+</ul></li>
+<li><strong>Operations:</strong>
+<ul>
+<li>Select these menu items to perform the operations</li>
+<li>The "★" symbols shows the operations can be performed next</li>
+<li>The <strong>Show switches</strong> operation shows you how to set the boot mode switching on the board. <strong>Very helpful!</strong></li>
+<li>Use the <strong>Download F.W.</strong> operation first after setting the boot most switches</li>
+</ul></li>
 </ul>
+
+<p><img src="gui.png?raw=true" alt="name" title="" /></p>
+
+<p><br></p>
+
+<p><br></p>
 
 <h3>Using the Command Line Interface</h3>
 
 <ul>
+<li><strong>Advanced users</strong> or production programming</li>
 <li>If you wish to use only the command line, you can see the list of commands by using the following command:</li>
 </ul>
 

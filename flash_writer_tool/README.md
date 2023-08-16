@@ -22,12 +22,40 @@
 
 ### Using the GUI Menu Interface
 
+* **This is the recommended way of using this tool**
 * When you run the flash\_writer\_tool.sh script without any arguments, it will operate in a GUI menu mode. In this interface, you can select the files you wish to program. You can also start the programming operations.
 * Please select your **Board** and **Target Flash**  and **Interface** first, then choose the location (**FILES_DIR**) that contains your binary files to program.
 * Your board configuration setting can be saved in a .ini file. You can using multiple different .ini files. By default, "config.ini" is chosen.
-* GUI settings will be saved in the file "settings.txt",
+* GUI settings will be saved in the file "settings.txt"
+
+
+* **Setup Items**
+ * **Board:** Select the board you are using. **Do this first.**
+ * **Target Flash:** Select SPI Flash or eMMC Flash
+ * **Interface:** Select the serial interface for your board.
+ * **Speed:** Serial baud rate. Select 115,200 or 921,600.
+ * **Config File:** File to save your settings to.
+ * **Extra Settings:** Fun stuff.
+* **Files:**
+  * The "✓" symbol means the file exist. The "x" means the file is not detected.
+  * **FILES_DIR:** Set this to the directory of your files to program.
+  * **FLASHWRITER:** The filename of the Flash Writer binary
+  * **RZ/G2H, /G2N, /G2M, /G2E:** Set SA0\_FILE, BL2\_FILE, SA6\_FILE, BL31\_FILE, UBOOT\_FILE
+  * **RZ/G2L, /G2LC, /G2UL, /V2L:** Set BL2\_FILE, FIP\_FILE
+* **Operations:**
+  * Select these menu items to perform the operations
+  * The "★" symbols shows the operations can be performed next
+  * The **Show switches** operation shows you how to set the boot mode switching on the board. **Very helpful!**
+  * Use the **Download F.W.** operation first after setting the boot most switches
+
+![name](gui.png?raw=true)
+
+<br>
+
+<br>
 
 ### Using the Command Line Interface
+* **Advanced users** or production programming
 * If you wish to use only the command line, you can see the list of commands by using the following command:
 
 <pre>
