@@ -731,7 +731,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
   # Do not do this if you are in a SSH or docker session
   if [ "$DISPLAY" != "" ] ; then
     #printf '\033[8;40;120t'
-    resize -s 40 120  > /dev/null
+    resize -s 43 120  > /dev/null
   fi
 
   # Read what we used last time
