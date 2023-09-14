@@ -1336,6 +1336,14 @@ if [ "$CMD" == "fw" ] ; then
 		echo "-----------------------------------------------------------------"
 		read dummy
 	fi
+
+	# Check if already running at 115200
+	stty -F $SERIAL_DEVICE_INTERFACE | grep -q 115200
+	if [ "$?" != "0" ] ; then
+		stty -F $SERIAL_DEVICE_INTERFACE 115200
+		sleep 0.5
+	fi
+
 	echo "Sending Flash Writter Binary ($FLASHWRITER)"
 	stat -L --printf="%s bytes\n" $FLASHWRITER
 	#cat $FLASHWRITER > $SERIAL_DEVICE_INTERFACE
