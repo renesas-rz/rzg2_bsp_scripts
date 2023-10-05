@@ -27,3 +27,38 @@ Example:
 Note that the script uses 'sudo' to run some commands, so you might be prompted to enter your account password.
 
 
+## Example
+
+Below is an example of taking the output of a Yocto build and creating an SD Card image.
+
+<pre>
+ # Change into the Yocto output directory
+ cd x/x/x/rzg2_bsp_v3.0.3/build/tmp/deploy/images/smarc-rzg2l
+
+ # Make a sub-directory
+ mkdir image_creator
+ cd  image_creator
+
+ # Download the files in this repository, and make the script executable
+ wget https://raw.githubusercontent.com/renesas-rz/rzg2_bsp_scripts/master/image_creator/create_image.sh
+ wget https://raw.githubusercontent.com/renesas-rz/rzg2_bsp_scripts/master/image_creator/example_config.ini
+ chmod +x create_image.sh
+
+ # Create the staging directories that will hold our files for each partition
+ mkdir fat16
+ mkdir rootfs
+
+ # Fill up our directires with files
+ tar xf ../core-image-weston-smarc-rzg2l.tar.bz2 -C rootfs
+ cp ../Image-smarc-rzg2l.bin fat16
+ cp ../Image-r9a07g044l2-smarc.dtb fat16
+
+ # Create the Image
+ ./create_image.sh example_config.ini
+
+ # Copy the output files back to our current directory
+ cp -a /tmp/sd_card_image .
+
+ # Done
+ ls -l sd_card_image
+</pre>
