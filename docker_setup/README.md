@@ -135,10 +135,10 @@ The full step by step instructions of what the dockerfile did is explained at th
 Copy/Paste the lines below and change them how you need.
 
 * You may change the tag name "rz\_ubuntu-20.04" to whatever you want.
-* Select the dockerfile that matches the Ubunut version you wish to install:
- * "Dockerfile.rzg\_ubuntu-20.04" 
- * "Dockerfile.rzg\_ubuntu-18.04" 
- * "Dockerfile.rzg\_ubuntu-16.04" 
+* **Select and download the dockerfile from this repository** that matches the Ubunut version you wish to install:
+ * "Dockerfile.rzg\_ubuntu-20.04"
+ * "Dockerfile.rzg\_ubuntu-18.04"
+ * "Dockerfile.rzg\_ubuntu-16.04"
 * The docker file will download a minimal version of the Ubunut version you need, and will also install any additional packages needed to build the Renesas BSP.
 * The dockerfiles are just text files, so feel free to open them up and see what they are doing.
 
@@ -222,7 +222,7 @@ $ docker ps
 
 During the creation and setup of your container, you created a user account with the same name as your host machine.<br>
 When entering into your container, use that user account (not root).
-What the command 'docker exec -it /bin/bash' does it start up a command shell inside your running container. 
+What the command 'docker exec -it /bin/bash' does it start up a command shell inside your running container.
 <pre>
 $ docker exec -it my_container_for_20.04 /bin/bash
 </pre>
@@ -250,15 +250,26 @@ $ tmux
 
 You type **exit** to leave tmux.
 
-You can do many things with tmux like divide your 1 container terminal into multiple terminals all running in the same container.<br>
-The key stroke "Ctrl + b" is used to send command to tux.
+**tmux Commands**
 
-* Use "Ctrl-b", the "?" to see a list of commands. Type 'q' to close that list.
-* Examples:
-** Ctrl-b  + %  (will split the window horizontally into 2 and give you a new terminal)
-** Ctrl-b  + "  (will split the window vertically into 2 and give you a new terminal)
-** Ctrl-b  + arrow-keys  (will move between the different split window)
-** Type 'exit' will close a tmux window
+* You can do many things with tmux like divide your 1 container terminal into multiple terminals all running in the same container.
+* The key stroke **Ctrl + b** (Ctrl-b) is used to send command to tux.
+* Use **Ctrl-b**, then **?** to see a list of commands. Type **q** to close that list.
+
+**Scrolling text in tmux**
+
+* You will notice that you cannot scroll up to previous text in the window when using tmux.
+* To enter 'scroll mode', use **Ctrl-b**  then  **[**
+* Then you can use your normal navigation keys to scroll around (eg. Up Arrow or PgDn).
+* Press **q** to quit scroll mode.
+
+
+**Other Examples:**
+
+* **Ctrl-b  + %** &nbsp; (will split the window horizontally into 2 and give you a new terminal)
+* **Ctrl-b  +** " &nbsp; (will split the window vertically into 2 and give you a new terminal)
+* **Ctrl-b  + arrow-keys** &nbsp; (will move between the different split window)
+* Type **exit** will close a tmux window
 
 <br>
 
