@@ -35,7 +35,7 @@ mbed
 NOTES: mbed code is needed to build Trusted Firmware-A in BSP v1.0.5+
 
 Clone repository and check out branch:
-	$ git clone git://github.com/ARMmbed/mbedtls.git
+	$ git clone https://github.com/ARMmbed/mbedtls.git
 	$ cd mbedtls
 	$ git checkout mbedtls-2.16.3
 	$ cd ..
