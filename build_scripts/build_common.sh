@@ -25,7 +25,7 @@ select_toolchain() {
 
   # Look for Poky (SDK) Toolchains
   if [ -e /opt/poky ] ; then
-    array_poky=( $(find /opt/poky -mindepth 1 -maxdepth 1 -type d))
+    array_poky=( $(find -L /opt/poky -mindepth 1 -maxdepth 1 -type d))
   fi
   array_poky_size=${#array_poky[@]}
   if [ "$array_poky_size" != "0" ] ; then
@@ -42,7 +42,7 @@ select_toolchain() {
 
   # ARM Toolchains
   if [ -e /opt/arm ] ; then
-    array_arm=( $(find /opt/arm -mindepth 1 -maxdepth 1 -type d))
+    array_arm=( $(find -L /opt/arm -mindepth 1 -maxdepth 1 -type d))
   fi
   array_arm_size=${#array_arm[@]}
   if [ "$array_arm_size" != "0" ] ; then
@@ -60,7 +60,7 @@ select_toolchain() {
 
   # Linaro Toolchains
   if [ -e /opt/linaro ] ; then
-    array_linaro=( $(find /opt/linaro -mindepth 1 -maxdepth 1 -type d))
+    array_linaro=( $(find -L /opt/linaro -mindepth 1 -maxdepth 1 -type d))
   fi
   array_linaro_size=${#array_linaro[@]}
   if [ "$array_linaro_size" != "0" ] ; then
