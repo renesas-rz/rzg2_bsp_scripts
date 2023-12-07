@@ -41,5 +41,15 @@ ENV_VAR_PART_NUM = "2"
 ENV_VAR_START_ADDRESS = "FB00"
 </pre>
 
-5. Run the macro using the TeraTerm macro option.
+5. Set baudrate option
+<pre>
+; Use high baudrate (921600) instead of standard (115200)
+; 0 do not use high baud
+; 1 use high baud via "SUP" command (make sure Flash Writer supports it)
+; 2 use high baud via additional accelerator loader (minimal_baudrate_SCIF.mot)
+; 0 slowest, 2 fastest
+USE_HIGH_BAUD = 2
+</pre>
+
+6. Run the macro using the TeraTerm macro option.
 
