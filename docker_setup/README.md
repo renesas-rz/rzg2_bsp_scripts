@@ -132,13 +132,16 @@ First we need to build an docker "Image". We will use a default Ubuntu image fro
 To create this image, we will use a "dockerfile" which is a set of commands that will set up our container for us.<br>
 The full step by step instructions of what the dockerfile did is explained at the end this document if you are interested.
 
-Copy/Paste the lines below and change them how you need.
-
-* You may change the tag name "rz\_ubuntu-20.04" to whatever you want.
-* **Select and download the dockerfile from this repository** that matches the Ubuntu version you wish to install:
+**Select and download the dockerfile from this repository** that matches the Ubuntu version you wish to install:
  * "Dockerfile.rzg\_ubuntu-20.04"
  * "Dockerfile.rzg\_ubuntu-18.04"
  * "Dockerfile.rzg\_ubuntu-16.04"
+<pre>
+$ wget https://raw.githubusercontent.com/renesas-rz/rzg2_bsp_scripts/master/docker_setup/Dockerfile.rzg_ubuntu-20.04
+</pre>
+
+Copy/Paste the lines below and change them how you need.
+* You may change the **--tag** name "rz\_ubuntu-20.04" to whatever you want.
 * The docker file will download a minimal version of the Ubunut version you need, and will also install any additional packages needed to build the Renesas BSP.
 * The dockerfiles are just text files, so feel free to open them up and see what they are doing.
 
