@@ -146,8 +146,8 @@ echo "cd $UBOOT_DIR"
 cd $UBOOT_DIR
 
 # If this is the first time building, we need to configure first
-if [ ! -e "$OUT/.config" ] ; then
-
+# Also, if we pass "defconfig" on the command line
+if [[ ! -e "$OUT/.config" || "$1" == "defconfig" ]] ; then
   if [ ! -e "configs/$DEFCONFIG" ] ; then
     echo ""
     echo "ERROR: Default configuration file configs/$DEFCONFIG does not exist"
@@ -157,6 +157,10 @@ if [ ! -e "$OUT/.config" ] ; then
 
   echo $MAKE $DEFCONFIG
   eval $MAKE $DEFCONFIG
+
+  if [ "$1" == "defconfig" ] ; then
+    exit
+  fi
 fi
 
 CMD="$MAKE $1 $2 $3"
