@@ -35,12 +35,27 @@ if [ "$DEFCONFIG" = "" ] ; then
   DEFCONFIG="${MACHINE}_defconfig"
 fi
 
-# Define (override) the defconfigs for Renesas boards that have non-standard names
-if [ "$MACHINE" == "hihope-rzg2m" ] ; then DEFCONFIG=r8a774a1_hihope-rzg2m_defconfig ; fi
-if [ "$MACHINE" == "hihope-rzg2n" ] ; then DEFCONFIG=r8a774b1_hihope-rzg2n_defconfig ; fi
-if [ "$MACHINE" == "hihope-rzg2h" ] ; then DEFCONFIG=r8a774e1_hihope-rzg2h_defconfig ; fi
-if [ "$MACHINE" == "ek874" ] ; then DEFCONFIG=r8a774c0_ek874_defconfig ; fi
-
+# Define (override) the defconfigs for Renesas boards that have non-standard names or grouped together
+if [ "$MACHINE" == "hihope-rzg2m" ] ; then
+  if [ -e "configs/r8a774a1_hihope-rzg2m_defconfig" ] ; then DEFCONFIG=r8a774a1_hihope-rzg2m_defconfig # original BSP
+  else DEFCONFIG=hihope_rzg2_defconfig    # u-boot v2021.10 mainline and later
+  fi
+fi
+if [ "$MACHINE" == "hihope-rzg2n" ] ; then
+  if [ -e "configs/r8a774b1_hihope-rzg2n_defconfig" ] ; then DEFCONFIG=r8a774b1_hihope-rzg2n_defconfig # original BSP
+  else DEFCONFIG=hihope_rzg2_defconfig    # u-boot v2021.10 mainline and later
+  fi
+fi
+if [ "$MACHINE" == "hihope-rzg2h" ] ; then
+  if [ -e "configs/r8a774e1_hihope-rzg2h_defconfig" ] ; then DEFCONFIG=r8a774e1_hihope-rzg2h_defconfig # original BSP
+  else DEFCONFIG=hihope_rzg2_defconfig    # u-boot v2021.10 mainline and later
+  fi
+fi
+if [ "$MACHINE" == "ek874" ] ; then
+  if [ -e "configs/r8a774c0_ek874_defconfig" ] ; then DEFCONFIG=r8a774c0_ek874_defconfig # original BSP
+  else DEFCONFIG=silinux_ek874_defconfig    # u-boot v2021.10 mainline and later
+  fi
+fi
 
 # Set the output directory (because I like all my build files separate from the source code)
 OUT=.out
