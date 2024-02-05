@@ -4,13 +4,34 @@
 # You can search for "Script Start GUI" to find the start of execution for GUI menu
 # You can search for "Script Start OPP" to find the start of execution of programming operations
 
+# === How this script works ===
+# When you start with no command line arguments, it goes into a GUI mode.
+# The GUI mode is an endless loop until you exit.
+# When you select an operation in the GUI to perform (programming), the script will call
+# itself again (sub-script) using command line parameters. This is done using the do_cmd()
+# function. When the sub-script is called with command line parameters, the GUI
+# does not show and instead performs the operating on the command line. After
+# that operation is complete, the sub-script exits and go back into main script
+# where the GUI continues to show.
+#
+# You can also use this script as command line only (no GUI). In that case, you will need to pass
+# a config filename the command line that has all the options and filenames included.
+
+
+# Global Default Settings
+FIP=0 # TF-A uses FIP instead of BL31
+EMMC_4BIT=0 # eMMC uses 4-bit data, not 8-bit
+if [ "$FW_GUI_MODE" == "" ] ; then
+  FW_GUI_MODE=0
+  # 0 = Command line only
+  # 1 = Show main GUI interface
+  # 2 = GUI is running the script again to do an operation
+fi
+
+# If nothing is passed on the command line, go into the GUI interface mode
 if [ "$1" == "" ] ; then
   export FW_GUI_MODE=1
 fi
-
-# Global Settings
-FIP=0 # TF-A uses FIP instead of BL31
-EMMC_4BIT=0 # eMMC uses 4-bit data, not 8-bit
 
 # Set BOARD_NAME and SW_SETTINGS
 switch_settings() {
@@ -79,7 +100,11 @@ Switch settings for SW1002.
 "
   fi
 
-  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] ||\
+     [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3s" ] ; then
+
+	SW_NAME="SW11"
+
 	if [ "$BOARD" == "smarc-rzg2l" ] ; then
 		BOARD_NAME="RZ/G2L SMARC Board by Renesas"
 		if [ "$BOARD_VERSION" == "PMIC" ] ; then
@@ -107,10 +132,14 @@ Switch settings for SW1002.
 			BOARD_NAME="$BOARD (Discrete Version)"
 		fi
 	fi
+	if [ "$BOARD" == "smarc-rzg3s" ] ; then
+		BOARD_NAME="RZ/G3S SMARC Board by Renesas"
+		SW_NAME="SW_MODE"
+	fi
 
 	SW_SETTINGS="
 
-Use switches SW11 on Carrier board to set the boot mode.
+Use switches ${SW_NAME} on Carrier board to set the boot mode.
 
    SCIF Download Mode       SPI Boot Mode        eMMC Boot Mode
 ----------------------------------------------------------------
@@ -126,6 +155,67 @@ Use switches SW11 on Carrier board to set the boot mode.
       | 1 2 3 4 |           | 1 2 3 4 |           | 1 2 3 4 |
       +---------+           +---------+           +---------+
 "
+  fi
+}
+
+# The Flash and RAM address for each device is different.
+set_flash_address() {
+
+  if [ "$BOARD" == "hihope-rzg2m" ] || [ "$BOARD" == "hihope-rzg2n" ] || \
+     [ "$BOARD" == "hihope-rzg2h" ] || [ "$BOARD" == "ek874" ] ; then
+
+    SPI_SA0_RAM="E6320000"    ; SPI_SA0_FLASH="000000"
+    SPI_BL2_RAM="E6304000"    ; SPI_BL2_FLASH="040000"
+    SPI_SA6_RAM="E6320000"    ; SPI_SA6_FLASH="180000"
+    SPI_BL31_RAM="44000000"   ; SPI_BL31_FLASH="1C0000"
+    SPI_UBOOT_RAM="50000000"  ; SPI_UBOOT_FLASH="300000"
+    SPI_FIP_RAM=""            ; SPI_FIP_FLASH="" # not used
+   
+    EMMC_SA0_RAM="E6320000"   ; EMMC_SA0_PART="1"   ; EMMC_SA0_SECTOR="000000"
+    EMMC_BL2_RAM="E6304000"   ; EMMC_BL2_PART="1"   ; EMMC_BL2_SECTOR="00001E"
+    EMMC_SA6_RAM="E6320000"   ; EMMC_SA6_PART="1"   ; EMMC_SA6_SECTOR="000180"
+    EMMC_BL31_RAM="44000000"  ; EMMC_BL31_PART="1"  ; EMMC_BL31_SECTOR="000200"
+    EMMC_UBOOT_RAM="50000000" ; EMMC_UBOOT_PART="2" ; EMMC_UBOOT_SECTOR="000000"
+    EMMC_FIP_RAM=""           ; EMMC_FIP_PART=""    ; EMMC_FIP_SECTOR="" # not used
+  fi
+
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || \
+     [ "$BOARD" == "smarc-rzv2l" ] ; then
+
+    LONGER_CMD_DELAY=1	# These parts need more time between sending commands
+
+    SPI_SA0_RAM=""      ; SPI_SA0_FLASH="" # not used
+    SPI_BL2_RAM="11E00" ; SPI_BL2_FLASH="0"
+    SPI_SA6_RAM=""      ; SPI_SA6_FLASH="" # not used
+    SPI_BL31_RAM=""     ; SPI_BL31_FLASH="" # not used
+    SPI_UBOOT_RAM=""    ; SPI_UBOOT_FLASH="" # not used
+    SPI_FIP_RAM="0"     ; SPI_FIP_FLASH="1D200"
+
+    EMMC_SA0_RAM=""          ; EMMC_SA0_PART=""   ; EMMC_SA0_SECTOR=""   # not used
+    EMMC_BL2_RAM="11E00"     ; EMMC_BL2_PART="1"  ; EMMC_BL2_SECTOR="1"
+    EMMC_SA6_RAM=""          ; EMMC_SA6_PART=""   ; EMMC_SA6_SECTOR=""   # not used
+    EMMC_BL31_RAM=""         ; EMMC_BL31_PART=""  ; EMMC_BL31_SECTOR=""  # not used
+    EMMC_UBOOT_RAM=""        ; EMMC_UBOOT_PART="" ; EMMC_UBOOT_SECTOR="" # not used
+    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1"  ; EMMC_FIP_SECTOR="100"
+  fi
+
+  if [ "$BOARD" == "smarc-rzg3s" ] ; then
+
+    LONGER_CMD_DELAY=1	# These parts need more time between sending commands
+
+    SPI_SA0_RAM=""      ; SPI_SA0_FLASH="" # not used
+    SPI_BL2_RAM="A1E00" ; SPI_BL2_FLASH="0"
+    SPI_SA6_RAM=""      ; SPI_SA6_FLASH="" # not used
+    SPI_BL31_RAM=""     ; SPI_BL31_FLASH="" # not used
+    SPI_UBOOT_RAM=""    ; SPI_UBOOT_FLASH="" # not used
+    SPI_FIP_RAM="0"     ; SPI_FIP_FLASH="64000"
+
+    EMMC_SA0_RAM=""          ; EMMC_SA0_PART=""   ; EMMC_SA0_SECTOR=""   # not used
+    EMMC_BL2_RAM="11E00"     ; EMMC_BL2_PART="1"  ; EMMC_BL2_SECTOR="1"
+    EMMC_SA6_RAM=""          ; EMMC_SA6_PART=""   ; EMMC_SA6_SECTOR=""   # not used
+    EMMC_BL31_RAM=""         ; EMMC_BL31_PART=""  ; EMMC_BL31_SECTOR=""  # not used
+    EMMC_UBOOT_RAM=""        ; EMMC_UBOOT_PART="" ; EMMC_UBOOT_SECTOR="" # not used
+    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1" ; EMMC_FIP_SECTOR="100"
   fi
 }
 
@@ -217,7 +307,8 @@ set_filenames() {
 	fi
   fi
 
-  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || [ "$BOARD" == "smarc-rzv2l" ]; then
+  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || \
+     [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3s" ] ; then
 
 	FIP=1
 	EMMC_4BIT=1
@@ -249,12 +340,45 @@ set_filenames() {
 			FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot"
 		fi
 	fi
-
+	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzg3s" ]; then
+		FLASHWRITER="$FILES_DIR/FlashWriter-smarc-rzg3s.mot"
+	fi
 	if [ "$BL2_FILE" == "" ] ; then
 		BL2_FILE=$FILES_DIR/bl2_bp-${BOARD}.bin
 	fi
+
+	# New BSP releases will have separate BL2 files for SPI and eMMC.
+	# If no BL2 file exits, check for _spi and _emmc versions
+	if [ ! -e $BL2_FILE ] ; then
+
+		if [ "$FLASH" == "0" ] ; then
+			if [ -e $FILES_DIR/bl2_bp_spi-${BOARD}.bin ] ; then
+				BL2_FILE=$FILES_DIR/bl2_bp_spi-${BOARD}.bin
+			fi
+		else
+			if [ -e $FILES_DIR/bl2_bp_emmc-${BOARD}.bin ] ; then
+				BL2_FILE=$FILES_DIR/bl2_bp_emmc-${BOARD}.bin
+			fi
+		fi
+	fi
+
 	if [ "$FIP_FILE" == "" ] ; then
 		FIP_FILE=$FILES_DIR/fip-${BOARD}.bin
+	fi
+
+	# NOTE: 2024-02-02
+	# RZ/G3S Binary is not working. So, only use .srec
+	if [ "$BOARD" == "smarc-rzg3s" ] ; then
+		if [ "${BL2_FILE: -3}" == "bin"  ] ; then
+			# replace .bin with .srec
+			BL2_FILE_BASE="${BL2_FILE:0:-3}"
+			BL2_FILE="${BL2_FILE_BASE}srec"
+		fi
+		if [ "${FIP_FILE: -3}" == "bin"  ] ; then
+			# replace .bin with .srec
+			FIP_FILE_BASE="${FIP_FILE:0:-3}"
+			FIP_FILE="${FIP_FILE_BASE}srec"
+		fi
 	fi
 
 	# Clear file settings we do not use
@@ -369,6 +493,7 @@ do_menu_board() {
 	"6 smarc-rzg2lc " " SMARC RZ/G2LC by Renesas Electronics" \
 	"7 smarc-rzg2ul " " SMARC RZ/G2UL by Renesas Electronics" \
 	"8 smarc-rzv2l " "  SMARC RZ/V2L by Renesas Electronics" \
+	"9 smarc-rzg3s " "  SMARC RZ/G3S by Renesas Electronics" \
 	"0 CUSTOM"       "  (manually edit ini file)" \
 	3>&1 1>&2 2>&3)
   RET=$?
@@ -398,12 +523,14 @@ do_menu_board() {
 		BOARD_VERSION="DISCRETE"
 	fi
       ;;
+      9\ *) BOARD=smarc-rzg3s ; FIP=1 ; EMMC_4BIT=1 ;;
       0\ *) BOARD=CUSTOM ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
 
     unset FILES_DIR
     switch_settings
+    set_flash_address
     clear_filenames
     set_filenames
     set_fw_binary
@@ -420,12 +547,16 @@ do_menu_target_flash() {
   if [ $RET -eq 0 ] ; then
     case "$SELECT" in
       1\ *) FLASH=0 ;
-        # If building outside of Yocto, and we have the wrong directory selected, we need to update file paths
-        echo $SA0_FILE | grep -q z_deploy_emmc ; if [ "$?" == "0" ] ; then clear_filenames ; set_filenames ; fi
+        # Sometimes the file names are different between SPI and eMMC builds
+        #clear_filenames  # Clear all file names
+	BL2_FILE="" # only clear BL2, the rest should have the same name
+        set_filenames
         ;;
       2\ *) FLASH=1
-        # If building outside of Yocto, and we have the wrong directory selected, we need to update file paths
-        echo $SA0_FILE | grep -q z_deploy_spi ; if [ "$?" == "0" ] ; then clear_filenames ; set_filenames ; fi
+        # Sometimes the file names are different between SPI and eMMC builds
+        #clear_filenames  # Clear all file names
+	BL2_FILE="" # only clear BL2, the rest should have the same name
+        set_filenames
         ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
@@ -710,9 +841,44 @@ do_cmd_sw() {
 do_cmd() {
 	export SERIAL_DEVICE_SPEED=$SERIAL_DEVICE_SPEED
 
-	echo "BOARD=$BOARD FLASH=$FLASH SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE ./flash_writer_tool.sh $CMD $FILE_TO_SEND"
-	BOARD=$BOARD FLASH=$FLASH SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE FW_GUI_MODE=2 ./flash_writer_tool.sh $CMD $FILE_TO_SEND
+	# Create a temporary config file and pass to sub-script
+	CFG_TMP_FILE="/tmp/tmp_gui_config.ini"
+	CONFIG_FILE_SAVE=$CONFIG_FILE
+	CONFIG_FILE=$CFG_TMP_FILE
+	save_config
+	CONFIG_FILE=$CONFIG_FILE_SAVE  # restore
+
+	echo "FW_GUI_MODE=2 ./flash_writer_tool.sh $CFG_TMP_FILE $CMD"
+	FW_GUI_MODE=2 ./flash_writer_tool.sh $CFG_TMP_FILE $CMD
 }
+
+save_config() {
+
+	echo "# This file was created by the flash_writer_tool.sh" > $CONFIG_FILE
+	echo "BOARD=$BOARD" >> $CONFIG_FILE
+	echo "BOARD_VERSION=$BOARD_VERSION" >> $CONFIG_FILE
+	echo "FLASH=$FLASH" >> $CONFIG_FILE
+	echo "SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE" >> $CONFIG_FILE
+	echo "SERIAL_DEVICE_SPEED=$SERIAL_DEVICE_SPEED" >> $CONFIG_FILE
+
+	echo "FILES_DIR=$FILES_DIR" >> $CONFIG_FILE
+	echo "FW_PREBUILT=$FW_PREBUILT" >> $CONFIG_FILE
+	echo "FLASHWRITER=$FLASHWRITER" >> $CONFIG_FILE
+	echo "FIP=$FIP" >> $CONFIG_FILE
+	echo "EMMC_4BIT=$EMMC_4BIT" >> $CONFIG_FILE
+	echo "SA0_FILE=$SA0_FILE" >> $CONFIG_FILE
+	echo "BL2_FILE=$BL2_FILE" >> $CONFIG_FILE
+	echo "SA6_FILE=$SA6_FILE" >> $CONFIG_FILE
+	echo "BL31_FILE=$BL31_FILE" >> $CONFIG_FILE
+	echo "FIP_FILE=$FIP_FILE" >> $CONFIG_FILE
+	echo "UBOOT_FILE=$UBOOT_FILE" >> $CONFIG_FILE
+}
+
+save_settings() {
+	echo "CONFIG_FILE=$CONFIG_FILE" > settings.txt
+	echo -e "\n# Whiptail colors\nexport NEWT_COLORS='""$NEWT_COLORS""'" >> settings.txt
+}
+
 
 #################################################################
 # Script Start GUI
@@ -743,50 +909,55 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
   # Some default entries if first use
   if [ "$BOARD" == "" ] ; then
     # Check for Yocto output files
-    if [ -e ../../build/tmp/deploy/images/hihope-rzg2h ] ; then
+    if [ -e ../../build/tmp/deploy/images ] ; then
+      IMAGES_DIR=../../build/tmp/deploy/images
+    elif [ -e build/tmp/deploy/images ] ; then
+      IMAGES_DIR=build/tmp/deploy/images
+    else
+      IMAGES_DIR=".."
+    fi
+
+    if [ -e ${IMAGES_DIR}/hihope-rzg2h ] ; then
       BOARD="hihope-rzg2h"
-      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
-    elif [ -e ../../build/tmp/deploy/images/hihope-rzg2m ] ; then
+    elif [ -e ${IMAGES_DIR}/hihope-rzg2m ] ; then
       BOARD="hihope-rzg2m"
-      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
-    elif [ -e ../../build/tmp/deploy/images/hihope-rzg2n ] ; then
+    elif [ -e ${IMAGES_DIR}/hihope-rzg2n ] ; then
       BOARD="hihope-rzg2n"
-      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
-    elif [ -e ../../build/tmp/deploy/images/ek874 ] ; then
+    elif [ -e ${IMAGES_DIR}/ek874 ] ; then
       BOARD="ek874"
-      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
-    elif [ -e ../../build/tmp/deploy/images/smarc-rzg2l ] ; then
+    elif [ -e ${IMAGES_DIR}/smarc-rzg2l ] ; then
       BOARD="smarc-rzg2l"
       FIP=1
       EMMC_4BIT=1
-      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
       # Select PMIC version as default
       BOARD_VERSION="PMIC"
-    elif [ -e ../../build/tmp/deploy/images/smarc-rzg2lc ] ; then
+    elif [ -e ${IMAGES_DIR}/smarc-rzg2lc ] ; then
       BOARD="smarc-rzg2lc"
       FIP=1
       EMMC_4BIT=1
-      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
-    elif [ -e ../../build/tmp/deploy/images/smarc-rzg2ul ] ; then
+    elif [ -e ${IMAGES_DIR}/smarc-rzg2ul ] ; then
       BOARD="smarc-rzg2ul"
       FIP=1
       EMMC_4BIT=1
-      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
-    elif [ -e ../../build/tmp/deploy/images/smarc-rzv2l ] ; then
+    elif [ -e ${IMAGES_DIR}/smarc-rzv2l ] ; then
       BOARD="smarc-rzv2l"
       FIP=1
       EMMC_4BIT=1
-      FILES_DIR=../../build/tmp/deploy/images/${BOARD}
       DETECTED=1
       # Select PMIC version as default
       BOARD_VERSION="PMIC"
+    elif [ -e ${IMAGES_DIR}/smarc-rzg3s ] ; then
+      BOARD="smarc-rzg3s"
+      FIP=1
+      EMMC_4BIT=1
+      DETECTED=1
     else
       # default to RZ/G2M
       BOARD="hihope-rzg2m"
@@ -794,7 +965,14 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
     fi
 
     if [ "$DETECTED" == "1" ] ; then
-      whiptail --msgbox "Detected Yocto output files for board \"$BOARD\"" 0 0 1
+      if [ "$IMAGES_DIR" == ".." ] ; then
+         # script is running in directory with the files
+         FILES_DIR="."
+      else
+         FILES_DIR=${IMAGES_DIR}/${BOARD}
+      fi
+
+      whiptail --msgbox "Detected Yocto output files for board \"$BOARD\"\n\nSetting FILES_DIR=${FILES_DIR}" 0 0 1
     fi
 
     # default values
@@ -815,6 +993,9 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 
     # Set BOARD_NAME and SW_SETTINGS
     switch_settings
+
+    # Set Flash and RAM addresses
+    set_flash_address
 
     # Set files for Renesas boards
     set_filenames
@@ -932,31 +1113,13 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
       # save if changes
       config_hash
       if [ "$CONFIG_HASH" != "$CONFIG_HASH_RESULT" ] || [ ! -e "$CONFIG_FILE" ] ; then
-        echo "# This file was created by the flash_writer_tool.sh" > $CONFIG_FILE
-        echo "BOARD=$BOARD" >> $CONFIG_FILE
-        echo "BOARD_VERSION=$BOARD_VERSION" >> $CONFIG_FILE
-        echo "FLASH=$FLASH" >> $CONFIG_FILE
-        echo "SERIAL_DEVICE_INTERFACE=$SERIAL_DEVICE_INTERFACE" >> $CONFIG_FILE
-        echo "SERIAL_DEVICE_SPEED=$SERIAL_DEVICE_SPEED" >> $CONFIG_FILE
-
-        echo "FILES_DIR=$FILES_DIR" >> $CONFIG_FILE
-        echo "FW_PREBUILT=$FW_PREBUILT" >> $CONFIG_FILE
-        echo "FLASHWRITER=$FLASHWRITER" >> $CONFIG_FILE
-        echo "FIP=$FIP" >> $CONFIG_FILE
-        echo "EMMC_4BIT=$EMMC_4BIT" >> $CONFIG_FILE
-        echo "SA0_FILE=$SA0_FILE" >> $CONFIG_FILE
-        echo "BL2_FILE=$BL2_FILE" >> $CONFIG_FILE
-        echo "SA6_FILE=$SA6_FILE" >> $CONFIG_FILE
-        echo "BL31_FILE=$BL31_FILE" >> $CONFIG_FILE
-        echo "FIP_FILE=$FIP_FILE" >> $CONFIG_FILE
-        echo "UBOOT_FILE=$UBOOT_FILE" >> $CONFIG_FILE
+        save_config
       fi
 
       # Global Settings
       settings_hash
       if [ "$SETTINGS_HASH" != "$SETTINGS_HASH_RESULT" ]  || [ ! -e settings.txt ] ; then
-        echo "CONFIG_FILE=$CONFIG_FILE" > settings.txt
-        echo -e "\n# Whiptail colors\nexport NEWT_COLORS='""$NEWT_COLORS""'" >> settings.txt
+        save_settings
       fi
 
       if [ "$SERIAL_DEVICE_SPEED" == "921600" ] ; then
@@ -1191,9 +1354,9 @@ do_emmc_write() {
 }
 
 print_usage() {
-	echo "Usage: [config file] [operation] [file name]" \
+	echo "Usage: [config file] [operation]" \
 	"config file"
-	echo "config file"
+	echo "config file         # If no file specified, config.ini is assumed"
 	echo "$0 fw               # Downloads the flash writer program after RESET (must be run first)"
 	echo ""
 	echo "$0 sa0              # programs SA0 (Boot Parameters)"
@@ -1212,7 +1375,7 @@ print_usage() {
 	echo "$0 h                # Show this help menu"
 	echo ""
 	echo "   Note: You can also pass a filename on the command line."
-	echo "         Example: $ $0 sa0 ../../arm-trusted-firmware/tools/dummy_create/bootparam_sa0.srec"
+	echo "         Example: $ $0 bl2"
 }
 
 #################################################################
@@ -1225,10 +1388,10 @@ if [ -e "$1" ] ; then
   source $1
   CONFIG_FILE=$1
 
-  # The 2nd argument  is the command
+  # The 2nd argument is the command
   CMD=$2
 else
-  # The 1st argument  is the command
+  # The 1st argument is the command
   CMD=$1
 
   # If BOARD is not already set, assume config.ini as default
@@ -1249,12 +1412,6 @@ else
   fi
 fi
 
-  # RZ/G2L and RZ/V2L uses FIP instead of BL31
-  if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
-    FIP=1
-    EMMC_4BIT=1
-  fi
-
 # Usage is displayed when no arguments on command line
 if [ "$CMD" == "h" ] ; then
 	print_usage
@@ -1270,6 +1427,9 @@ fi
 
 # Set BOARD_NAME and SW_SETTINGS
 switch_settings
+
+# Set Flash and RAM addresses
+set_flash_address
 
 # 0 = SPI Flash
 # 1 = eMMC
@@ -1302,9 +1462,9 @@ else
   # Programming SPI Flash over SCIF seems to only need a short delay
   CMD_DELAY="0.5"
 
- if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || [ "$BOARD" == "smarc-rzv2l" ] ; then
-   CMD_DELAY="1.5"
- fi
+  if [ "$LONGER_CMD_DELAY" == "1" ] ; then
+    CMD_DELAY="1.5"
+  fi
 fi
 
 # Print current selected board
@@ -1366,9 +1526,9 @@ echo "SERIAL_DEVICE_SPEED = $SERIAL_DEVICE_SPEED"
 # Change to faster baud rate if needed
 if [ "$SERIAL_DEVICE_SPEED" == "921600" ] ; then
 	# Check if already running fast
-	stty -F $SERIAL_DEVICE_INTERFACE | grep -q 921600 
+	stty -F $SERIAL_DEVICE_INTERFACE | grep -q 921600
 	if [ "$?" != "0" ] ; then
-		# send SUP command 
+		# send SUP command
 		echo -en "SUP\r" > $SERIAL_DEVICE_INTERFACE
 		sleep 1
 			# Switch to high speed
@@ -1417,9 +1577,9 @@ if [ "$CMD" == "sa0" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP"
 	fi
 
 	if [ "$FLASH" == "0" ] ; then
-		do_spi_write "bootparam SA0" E6320000 000000 $SA0_FILE
+		do_spi_write "bootparam SA0" $SPI_SA0_RAM $SPI_SA0_FLASH $SA0_FILE
 	else
-		do_emmc_write "bootparam SA0" 1 000000 E6320000 $SA0_FILE
+		do_emmc_write "bootparam SA0" $EMMC_SA0_PART $EMMC_SA0_SECTOR $EMMC_SA0_RAM $SA0_FILE
 	fi
 
 	if [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
@@ -1433,17 +1593,9 @@ if [ "$CMD" == "bl2" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
 		BL2_FILE=$2
 	fi
 	if [ "$FLASH" == "0" ] ; then
-		if [ "$FIP" == "0" ] ; then
-			do_spi_write "BL2" E6304000 040000 $BL2_FILE
-		else
-			do_spi_write "BL2" 11E00 000000 $BL2_FILE
-		fi
+		do_spi_write "BL2" $SPI_BL2_RAM $SPI_BL2_FLASH $BL2_FILE
 	else
-		if [ "$FIP" == "0" ] ; then
-			do_emmc_write "BL2" 1 00001E E6304000 $BL2_FILE
-		else
-			do_emmc_write "BL2" 1 000001 00011E00 $BL2_FILE
-		fi
+		do_emmc_write "BL2" $EMMC_BL2_PART $EMMC_BL2_SECTOR $EMMC_BL2_RAM $BL2_FILE
 	fi
 
 	if [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
@@ -1457,9 +1609,9 @@ if [ "$CMD" == "sa6" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP"
 		SA6_FILE=$2
 	fi
 	if [ "$FLASH" == "0" ] ; then
-		do_spi_write "Cert Header SA6" E6320000 180000 $SA6_FILE
+		do_spi_write "Cert Header SA6" $SPI_SA6_RAM $SPI_SA6_FLASH $SA6_FILE
 	else
-		do_emmc_write "Cert Header SA6" 1 000180 E6320000 $SA6_FILE
+		do_emmc_write "Cert Header SA6" $EMMC_SA6_PART $EMMC_SA6_SECTOR $EMMC_SA6_RAM $SA6_FILE
 	fi
 
 	if [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
@@ -1473,9 +1625,9 @@ if [ "$CMD" == "bl31" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP
 		BL31_FILE=$2
 	fi
 	if [ "$FLASH" == "0" ] ; then
-		do_spi_write "BL31" 44000000 1C0000 $BL31_FILE
+		do_spi_write "BL31" $SPI_BL31_RAM $SPI_BL31_FLASH $BL31_FILE
 	else
-		do_emmc_write "BL31" 1 000200 44000000 $BL31_FILE
+		do_emmc_write "BL31" $EMMC_BL31_PART $EMMC_BL31_SECTOR $EMMC_BL31_RAM $BL31_FILE
 	fi
 
 	if [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
@@ -1489,9 +1641,9 @@ if [ "$CMD" == "uboot" ] || [ "$CMD" == "all" ] && [ "$FIP" == "0" ] ; then
 		UBOOT_FILE=$2
 	fi
 	if [ "$FLASH" == "0" ] ; then
-		do_spi_write "u-boot" 50000000 300000 $UBOOT_FILE
+		do_spi_write "u-boot" $SPI_UBOOT_RAM $SPI_UBOOT_FLASH $UBOOT_FILE
 	else
-		do_emmc_write "u-boot" 2 000000 50000000 $UBOOT_FILE
+		do_emmc_write "u-boot" $EMMC_UBOOT_PART $EMMC_UBOOT_SECTOR $EMMC_UBOOT_RAM $UBOOT_FILE
 	fi
 
 	if [ "$CMD" == "all" ] ; then
@@ -1505,9 +1657,9 @@ if [ "$CMD" == "fip" ] || [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] && [ "$FIP"
 		FIP_FILE=$2
 	fi
 	if [ "$FLASH" == "0" ] ; then
-		do_spi_write "FIP" 00000 1D200 $FIP_FILE
+		do_spi_write "FIP" $SPI_FIP_RAM $SPI_FIP_FLASH $FIP_FILE
 	else
-		do_emmc_write "FIP" 1 100 00000000 $FIP_FILE
+		do_emmc_write "FIP" $EMMC_FIP_PART $EMMC_FIP_SECTOR $EMMC_FIP_RAM $FIP_FILE
 	fi
 
 	if [ "$CMD" == "atf" ] || [ "$CMD" == "all" ] ; then
