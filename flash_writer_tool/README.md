@@ -96,12 +96,12 @@ $ ./flash_writer_tool.sh
 * If you press the RESET button the board, you should see a text message "SCIF Download mode .......  please send !"
 * This message will confirm that you are in the correct mode.
 
-7. **Download the flash writer binary**.
+5. **Download the flash writer binary**.
 * Select the operation **Downlaod F.W.**
 * This must be done **first** after RESET.
 * This will downlaod the Flash Writer binary to your device's internal RAM. You cannot do any other operation until this is complete.
 
-8. Perform the individual commands to download and program the binaries to the board.
+6. Perform the individual commands to download and program the binaries to the board.
 
 <br>
 
