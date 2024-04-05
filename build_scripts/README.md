@@ -13,6 +13,7 @@
 <tr><td>RZ/G2LC</td><td>SMARC</td><td>RZ/G2L BSP 1.x, VLP64 3.x</td></tr>
 <tr><td>RZ/G2UL</td><td>SMARC</td><td>RZ/G2L BSP 1.x, VLP64 3.x</td></tr>
 <tr><td>RZ/V2L</td><td>SMARC</td><td>RZ/V2L BSP 1.x</td></tr>
+<tr><td>RZ/G3S</td><td>SMARC</td><td>RZ/G3S BSP 1.x</td></tr>  
 </table>
 
 ## Repository Installs
