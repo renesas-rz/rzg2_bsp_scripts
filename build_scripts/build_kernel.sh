@@ -266,28 +266,35 @@ if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZG2" ] ; then
   exit
 fi
 
-if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZG2L" ] ; then
+# Function to handle deployment for each BSP type
+deploy_bsp() {
 
-  mkdir -p $DEPLOY_DIR
-  mkdir -p $DEPLOY_DIR/modules
-  mkdir -p $DEPLOY_DIR/$MACHINE
+  mkdir -p "$DEPLOY_DIR"
+  mkdir -p "$DEPLOY_DIR/modules"
+  mkdir -p "$DEPLOY_DIR/$MACHINE"
 
   # Kernel (rename to match Yocto output...but it's all the same kernel)
   cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE
   cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE/Image-${MACHINE}.bin
 
   # Device Trees
-  case "$MACHINE" in
-  "smarc-rzg2l")
-    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a07g044l2-smarc.dtb $DEPLOY_DIR/$MACHINE
-    ;;
-  "smarc-rzg2lc")
-    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a07g044c2-smarc.dtb $DEPLOY_DIR/$MACHINE
-    ;;
-  *)
-    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a*.dtb $DEPLOY_DIR/$MACHINE
-    ;;
-  esac
+    case "$MACHINE" in
+    "smarc-rzg2l")
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a07g044l2-smarc.dtb" "$DEPLOY_DIR/$MACHINE"
+        ;;
+    "smarc-rzg2lc")
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a07g044c2-smarc.dtb" "$DEPLOY_DIR/$MACHINE"
+        ;;
+    "smarc-rzv2l")
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dtb" "$DEPLOY_DIR/$MACHINE"
+        ;;
+    "smarc-rzg3s")
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a08g045s33-smarc.dtb" "$DEPLOY_DIR/$MACHINE"
+        ;;
+    *)
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a*.dtb" "$DEPLOY_DIR/$MACHINE"
+        ;;
+    esac
 
   # Modules
   mkdir -p $DEPLOY_DIR/modules
@@ -297,89 +304,15 @@ if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZG2L" ] ; then
   mkdir -p $DEPLOY_DIR/firmware
   cp -v firmware/*  $DEPLOY_DIR/firmware
 
-  # Copy to output directory
-  #if [ "$OUT_DIR" != "" ] ; then
-  #  mkdir -p $OUT_DIR
-  #  cp -v $DEPLOY_DIR/$MACHINE/* $OUT_DIR
-  #  echo -e "Files copied to $OUT_DIR"
-  #fi
-
   exit
-fi
+}
 
-if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZV2L" ] ; then
-
-  mkdir -p $DEPLOY_DIR
-  mkdir -p $DEPLOY_DIR/modules
-  mkdir -p $DEPLOY_DIR/$MACHINE
-
-  # Kernel (rename to match Yocto output...but it's all the same kernel)
-  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE
-  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE/Image-${MACHINE}.bin
-
-  # Device Trees
-  case "$MACHINE" in
-  "smarc-rzv2l")
-    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dtb $DEPLOY_DIR/$MACHINE
-    ;;
-  *)
-    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a*.dtb $DEPLOY_DIR/$MACHINE
-    ;;
-  esac
-
-  # Modules
-  mkdir -p $DEPLOY_DIR/modules
-  make O=$OUT INSTALL_MOD_PATH=../$DEPLOY_DIR/modules/ modules_install
-
-  # Firmware files (like for WiFi)
-  mkdir -p $DEPLOY_DIR/firmware
-  cp -v firmware/*  $DEPLOY_DIR/firmware
-
-  # Copy to output directory
-  #if [ "$OUT_DIR" != "" ] ; then
-  #  mkdir -p $OUT_DIR
-  #  cp -v $DEPLOY_DIR/$MACHINE/* $OUT_DIR
-  #  echo -e "Files copied to $OUT_DIR"
-  #fi
-
-  exit
-fi
-if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZG3S" ] ; then
-
-  mkdir -p $DEPLOY_DIR
-  mkdir -p $DEPLOY_DIR/modules
-  mkdir -p $DEPLOY_DIR/$MACHINE
-
-  # Kernel (rename to match Yocto output...but it's all the same kernel)
-  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE
-  cp -v $OUT/arch/arm64/boot/Image $DEPLOY_DIR/$MACHINE/Image-${MACHINE}.bin
-
-  # Device Trees
-  case "$MACHINE" in
-  "smarc-rzg3s")
-    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a08g045s33-smarc.dtb $DEPLOY_DIR/$MACHINE
-    ;;
-  *)
-    cp -v $OUT/arch/arm64/boot/dts/renesas/r9a*.dtb $DEPLOY_DIR/$MACHINE
-    ;;
-  esac
-
-  # Modules
-  mkdir -p $DEPLOY_DIR/modules
-  make O=$OUT INSTALL_MOD_PATH=../$DEPLOY_DIR/modules/ modules_install
-
-  # Firmware files (like for WiFi)
-  mkdir -p $DEPLOY_DIR/firmware
-  cp -v firmware/*  $DEPLOY_DIR/firmware
-
-  # Copy to output directory
-  #if [ "$OUT_DIR" != "" ] ; then
-  #  mkdir -p $OUT_DIR
-  #  cp -v $DEPLOY_DIR/$MACHINE/* $OUT_DIR
-  #  echo -e "Files copied to $OUT_DIR"
-  #fi
-
-  exit
+# Deploy if the command is "deploy" and BSP_TYPE matches
+if [ "$1" == "deploy" ]; then
+    if [ "$BSP_TYPE" == "RZG2L" ] || [ "$BSP_TYPE" == "RZV2L" ] || [ "$BSP_TYPE" == "RZG3S" ]; then
+        deploy_bsp
+        exit
+    fi
 fi
 
 # Add '-s' for silent Build
