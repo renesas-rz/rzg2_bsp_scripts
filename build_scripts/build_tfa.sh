@@ -14,6 +14,7 @@
 # MACHINE=smarc-rzg2ul
 # MACHINE=smarc-rzgvl
 #   BOARD_VERSION: DISCRETE, PMIC
+# MACHINE=smarc-rzg3s
 
 #TFA_BOOT: 0=SPI Flash, 1=eMMC
 #TFA_ECC_FULL: 0=no ECC, 1=ECC dual channel, 2=ECC single channel
@@ -55,13 +56,18 @@ if [ "$TFA_DEBUG" == "" ] ; then
 fi
 if [ "$TFA_FIP" == "" ] ; then
 
-  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] || [ "$MACHINE" == "smarc-rzv2l" ] || [ "$MACHINE" == "smarc-rzg2ul" ]; then
+  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] || [ "$MACHINE" == "smarc-rzv2l" ] || [ "$MACHINE" == "smarc-rzg2ul" ] || [ "$MACHINE" == "smarc-rzg3s" ]; then
     TFA_FIP=1
   else
     TFA_FIP=0
   fi
 fi
-
+BMODE=""
+if [ "$TFA_BOOT" == 0 ] ; then
+  BMODE="spi"
+elif [ "$TFA_BOOT" == 1 ] ; then
+  BMODE="mmc"
+fi
 
 ###############################
 # Trusted Firmware Version
@@ -169,42 +175,68 @@ do_debug_menu() {
   fi
 }
 
+  create_bootparams_bptool() {
 
-##############################
-create_bootparams() {
+      echo -e "\n[Building bp tool]"
+      # Build the bptool
+      echo -e "\n[Building bp tool]"
+      cd tools/renesas/rz_boot_param/${PLATFORM}
+      make PLAT=${PLATFORM}
+      cd ../../../..
 
-  # Create bootparams.bin
-  # - bootparams.bin totls size is 512 bytes
-  # - First 4 bytes is the size of bl2.bin (4-byte aligned)
-  # - Last 2 bytes are 0x55, 0xAA
-  # - Middle of the file is 0xFF
+      if [ "$TFA_DEBUG" == "1" ] ; then
+        cd build/${PLATFORM}/debug
+      else
+        cd build/${PLATFORM}/release
+      fi
 
-  if [ "$TFA_DEBUG" == "1" ] ; then
-    cd build/${PLATFORM}/debug
-  else
-    cd build/${PLATFORM}/release
-  fi
+      # Create bl2_bp.bin
+      ../../../tools/renesas/rz_boot_param/bptool bl2.bin bootparams.bin 0xA3000 $BMODE
+      if [ "bl2.bin" -nt "bl2_bp.bin" ] || [ ! -e "bl2_bp.bin" ] ; then
+        echo -e "\n[Adding bootparams.bin to bl2.bin]"
+        cat bootparams.bin bl2.bin > bl2_bp.bin
+      fi
 
-  echo -e "\n[Creating bootparams.bin]"
-  SIZE=$(stat -L --printf="%s" bl2.bin)
-  SIZE_ALIGNED=$(expr $SIZE + 3)
-  SIZE_ALIGNED2=$((SIZE_ALIGNED & 0xFFFFFFFC))
-  SIZE_HEX=$(printf '%08x\n' $SIZE_ALIGNED2)
-  echo "  bl2.bin size=$SIZE, Aligned size=$SIZE_ALIGNED2 (0x${SIZE_HEX})"
-  STRING=$(echo \\x${SIZE_HEX:6:2}\\x${SIZE_HEX:4:2}\\x${SIZE_HEX:2:2}\\x${SIZE_HEX:0:2})
-  printf "$STRING" > bootparams.bin
-  for i in `seq 1 506` ; do printf '\xff' >> bootparams.bin ; done
-  printf '\x55\xaa' >> bootparams.bin
+      cd ../../..
 
-  # Combine bootparams.bin and bl2.bin into single binary
-  # Only if a new version of bl2.bin is created
-  if [ "bl2.bin" -nt "bl2_bp.bin" ] || [ ! -e "bl2_bp.bin" ] ; then
-    echo -e "\n[Adding bootparams.bin to bl2.bin]"
-    cat bootparams.bin bl2.bin > bl2_bp.bin
-  fi
+  }
 
-  cd ../../..
-}
+  ##############################
+  create_bootparams() {
+
+      # Create bootparams.bin
+      # - bootparams.bin totls size is 512 bytes
+      # - First 4 bytes is the size of bl2.bin (4-byte aligned)
+      # - Last 2 bytes are 0x55, 0xAA
+      # - Middle of the file is 0xFF
+
+      if [ "$TFA_DEBUG" == "1" ] ; then
+        cd build/${PLATFORM}/debug
+      else
+        cd build/${PLATFORM}/release
+      fi
+      
+      echo -e "\n[Creating bootparams.bin]"
+      SIZE=$(stat -L --printf="%s" bl2.bin)
+      SIZE_ALIGNED=$(expr $SIZE + 3)
+      SIZE_ALIGNED2=$((SIZE_ALIGNED & 0xFFFFFFFC))
+      SIZE_HEX=$(printf '%08x\n' $SIZE_ALIGNED2)
+      echo "  bl2.bin size=$SIZE, Aligned size=$SIZE_ALIGNED2 (0x${SIZE_HEX})"
+      STRING=$(echo \\x${SIZE_HEX:6:2}\\x${SIZE_HEX:4:2}\\x${SIZE_HEX:2:2}\\x${SIZE_HEX:0:2})
+      printf "$STRING" > bootparams.bin
+      for i in `seq 1 506` ; do printf '\xff' >> bootparams.bin ; done
+      printf '\x55\xaa' >> bootparams.bin
+
+      # Combine bootparams.bin and bl2.bin into single binary
+      # Only if a new version of bl2.bin is created
+      if [ "bl2.bin" -nt "bl2_bp.bin" ] || [ ! -e "bl2_bp.bin" ] ; then
+        echo -e "\n[Adding bootparams.bin to bl2.bin]"
+        cat bootparams.bin bl2.bin > bl2_bp.bin
+      fi
+
+      cd ../../..
+  }
+
 
 ##############################
 create_fip_and_copy() {
@@ -247,8 +279,14 @@ create_fip_and_copy() {
   cp -v build/${PLATFORM}/$BUILD_DIR/bootparams.bin $OUT_DIR/bootparams-${MACHINE}${EXTRA}.bin
 
   echo -e "[Convert BIN to SREC format]"
+  
   #<BL2>
+ if [ "$MPU" == "RZG3S" ] ; then
+  echo -e "[Create srec for G3S]"
+  ${CROSS_COMPILE}objcopy -I binary -O srec --adjust-vma=0xA1E00 --srec-forceS3 build/${PLATFORM}/$BUILD_DIR/bl2_bp.bin $OUT_DIR/bl2_bp_${BMODE}-${MACHINE}${EXTRA}.srec
+else
   ${CROSS_COMPILE}objcopy -I binary -O srec --adjust-vma=0x00011E00 --srec-forceS3 build/${PLATFORM}/$BUILD_DIR/bl2_bp.bin $OUT_DIR/bl2_bp-${MACHINE}${EXTRA}.srec
+fi  
 
   #<FIP>
   ${CROSS_COMPILE}objcopy -I binary -O srec --adjust-vma=0x00000000 --srec-forceS3 fip.bin $OUT_DIR/fip-${MACHINE}${EXTRA}.srec
@@ -505,6 +543,10 @@ case "$MPU" in
     PLATFORM=v2l
     TOOL=
     ;;
+  "RZG3S")
+    PLATFORM=g3s
+    TOOL=
+    ;;
 esac
 
 
@@ -565,6 +607,10 @@ case "$MACHINE" in
    else
      TFA_OPT="BOARD=smarc_4"
    fi
+    ;;
+
+  "smarc-rzg3s")
+    TFA_OPT="BOARD=smarc"
     ;;
 
   "ek874")
@@ -690,7 +736,11 @@ fi
 
 # FIP build
 if [ "$TFA_FIP" == "1" ] ; then
-  create_bootparams
+  if [ "$MPU" == "RZG3S" ] ; then
+    create_bootparams_bptool
+  else
+    create_bootparams
+  fi
   create_fip_and_copy
 
   #### STOP HERE for FIP Builds ####

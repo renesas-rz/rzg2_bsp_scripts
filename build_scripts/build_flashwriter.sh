@@ -19,6 +19,7 @@ root=,blue
 #BOARD=RZG2LC_DEV
 #BOARD=RZV2LC_SMARC
 #BOARD=RZV2L_SMARC_PMIC
+#BOARD=RZG3S_SMARC
 
 ################################
 # Makefile options
@@ -61,6 +62,7 @@ do_board_menu() {
 	"10  RZV2L_SMARC_PMIC" "Renesas SMARC RZ/V2L (PMIC Version)" \
 	"11  RZV2L_15MMSQ_DEV" "Renesas Internal Dev Board" \
 	"12  RZG2UL_SMARC" "Renesas SMARC RZ/G2UL" \
+  "13  RZG3S_SMARC" "Renesas SMARC RZ/G3S" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -77,6 +79,7 @@ do_board_menu() {
       10\ *) FW_BOARD=RZV2LC_SMARC_PMIC ;;
       11\ *) FW_BOARD=RZV2L_15MMSQ_DEV ;;
       12\ *) FW_BOARD=RZG2UL_SMARC ;;
+      13\ *) FW_BOARD=RZG3S_SMARC ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
   fi
@@ -179,6 +182,7 @@ if [ "$1" == "" ] ; then
       RZG2UL_SMARC) OUTFILE=Flash_Writer_SCIF_RZG2UL_SMARC_DDR4_1GB_1PCS.mot ;;
       RZV2L_SMARC) OUTFILE=Flash_Writer_SCIF_RZV2L_SMARC_DDR4_4GB.mot ;;
       RZV2L_SMARC_PMIC) OUTFILE=Flash_Writer_SCIF_RZV2L_SMARC_PMIC_DDR4_2GB_1PCS.mot ;;
+      RZG3S_SMARC) OUTFILE=Flash_Writer_SCIF_RZG3S_SMARC_LPDDR4.mot ;;
       *) OUTFILE="*.mot" ;;
     esac
 
