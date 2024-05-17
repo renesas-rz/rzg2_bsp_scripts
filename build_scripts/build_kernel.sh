@@ -281,15 +281,19 @@ deploy_bsp() {
     case "$MACHINE" in
     "smarc-rzg2l")
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a07g044l2-smarc.dtb" "$DEPLOY_DIR/$MACHINE"
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a07g044l2-smarc.dtb" "$DEPLOY_DIR/$MACHINE/Image-r9a07g044l2-smarc.dtb" 
         ;;
     "smarc-rzg2lc")
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a07g044c2-smarc.dtb" "$DEPLOY_DIR/$MACHINE"
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a07g044c2-smarc.dtb" "$DEPLOY_DIR/$MACHINE/Image-r9a07g044c2-smarc.dtb"
         ;;
     "smarc-rzv2l")
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dtb" "$DEPLOY_DIR/$MACHINE"
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a07g054l2-smarc.dtb" "$DEPLOY_DIR/$MACHINE/Image-r9a07g054l2-smarc.dtb"
         ;;
     "smarc-rzg3s")
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a08g045s33-smarc.dtb" "$DEPLOY_DIR/$MACHINE"
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a08g045s33-smarc.dtb" "$DEPLOY_DIR/$MACHINE/Image-r9a08g045s33-smarc.dtb"
         ;;
     *)
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a*.dtb" "$DEPLOY_DIR/$MACHINE"
