@@ -70,22 +70,6 @@ elif [ "$TFA_BOOT" == 1 ] ; then
 fi
 
 ###############################
-# Trusted Firmware Version
-##############################
-
-# Get version number from Makefile
-TFA_VERSION_MAJOR=`grep "^VERSION_MAJOR" $TFA_DIR/Makefile | awk '{print $3}'`
-TFA_VERSION_MINOR=`grep "^VERSION_MINOR" $TFA_DIR/Makefile | awk '{print $3}'`
-TFA_VERSION="$TFA_VERSION_MAJOR.$TFA_VERSION_MINOR"
-#echo TFA_VERSION=$TFA_VERSION
-
-# Some setting names switched from RZG_xx to RCAR_xxx after the code mainlined for release 2.5 since the
-# same code alrady exists for R-Car in mainline, so they just used the same names
-if [ "$TFA_VERSION" \< "2.5" ] ; then
-  TFA_BEFORE_2_5="1"
-fi
-
-###############################
 # Text strings
 ##############################
 BOOT_TEXT_STR=("SPI Flash" "eMMC Flash")
@@ -654,38 +638,6 @@ if [ "$PLATFORM" == "rzg" ] &&  [ "$MBEDTLS_DIR" == "" ] ; then
     echo "ERROR: You need to have the mbed TLS repo to build"
     exit
   fi
-fi
-
-# For versions before v2.5, RZG_ was used for some settings instead of RCAR_
-if [ "${TFA_BEFORE_2_5}" ] ; then
-
-  # RCAR_SA6_TYPE -> RZG_SA6_TYPE
-  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_SA6_TYPE/RZG_SA6_TYPE/')
-  TFA_OPT="$TFA_OPT_NEW"
-
-  # RCAR_SA0_SIZE -> RZG_SA0_SIZE
-  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_SA0_SIZE/RZG_SA0_SIZE/')
-  TFA_OPT="$TFA_OPT_NEW"
-
-  # RCAR_DRAM_DDR3L_MEMCONF -> RZG_DRAM_DDR3L_MEMCONF
-  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_DRAM_DDR3L_MEMCONF/RZG_DRAM_DDR3L_MEMCONF/')
-  TFA_OPT="$TFA_OPT_NEW"
-
-  # RCAR_DRAM_DDR3L_MEMDUAL -> RZG_DRAM_DDR3L_MEMDUAL
-  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_DRAM_DDR3L_MEMDUAL/RZG_DRAM_DDR3L_MEMDUAL/')
-  TFA_OPT="$TFA_OPT_NEW"
-
-  # RCAR_DRAM_SPLIT -> RZG_DRAM_SPLIT
-  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_DRAM_SPLIT/RZG_DRAM_SPLIT/')
-  TFA_OPT="$TFA_OPT_NEW"
-
-  # RCAR_DRAM_CHANNEL -> RZG_DRAM_CHANNEL
-  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_DRAM_CHANNEL/RZG_DRAM_CHANNEL/')
-  TFA_OPT="$TFA_OPT_NEW"
-
-  # RCAR_RPC_HYPERFLASH_LOCKED -> RZG_RPC_HYPERFLASH_LOCKED
-  TFA_OPT_NEW=$(echo $TFA_OPT | sed 's/RCAR_RPC_HYPERFLASH_LOCKED/RZG_RPC_HYPERFLASH_LOCKED/')
-  TFA_OPT="$TFA_OPT_NEW"
 fi
 
 # Set up Toolchain in current environment
