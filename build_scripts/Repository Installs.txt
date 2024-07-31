@@ -1,67 +1,52 @@
 Please use the commands below to download the correct repository for building.
 
-Refer to the wiki page of each github repositry to find out what branch to clone.
+---------------------------------------------------
+Github Repository Wiki pages
+---------------------------------------------------
+Refer to the wiki page of each github repository to find out what branch to clone.
+
+For each MPU, there are different branches.
+
+It is recommended to use the latest software versions.
+
+https://github.com/renesas-rz/rzg2_flash_writer/wiki
+https://github.com/renesas-rz/rzg_trusted-firmware-a/wiki
+https://github.com/renesas-rz/renesas-u-boot-cip/wiki
+https://github.com/renesas-rz/rz_linux-cip/wiki
+
 
 ---------------------------------------------------
-RZ Flash Writer
+Example:
+   RZ/G2L SMARC
+   VLP/G v3.0.6
 ---------------------------------------------------
-
-Branch information: https://github.com/renesas-rz/rzg2_flash_writer/wiki
-
-Clone repository and check out xxxx branch:
-	$ git clone https://github.com/renesas-rz/rzg2_flash_writer
-	$ cd rzg2_flash_writer
-	$ git checkout xxxxx
-	$ cd ..
+$ git clone --branch rz_g2l          https://github.com/renesas-rz/rzg2_flash_writer
+$ git clone --branch v2.9/rz         https://github.com/renesas-rz/rzg_trusted-firmware-a
+$ git clone --branch v2021.10/rz     https://github.com/renesas-rz/renesas-u-boot-cip
+$ git clone --branch rz-5.10-cip41   https://github.com/renesas-rz/rz_linux-cip
 
 
 ---------------------------------------------------
-Trusted Firmware-ARM (TF-A)
+Example:
+   RZ/G3S SMARC
+   VLP/G v3.0.6
 ---------------------------------------------------
-NOTE: Please also download mbed. It is required to build TF-A (see below)
+ (no flash writer code)
+$ git clone --branch 2.7.0/g3s_1.0.0_rc4   https://github.com/renesas-rz/rzg_trusted-firmware-a
+$ git clone --branch v2021.10/rz           https://github.com/renesas-rz/renesas-u-boot-cip
+$ git clone --branch rz-5.10-cip41         https://github.com/renesas-rz/rz_linux-cip
 
-Branch information: https://github.com/renesas-rz/rzg_trusted-firmware-a/wiki
 
-Clone repository and check out xxxx branch:
-	$ git clone https://github.com/renesas-rz/rzg_trusted-firmware-a
-	$ cd rzg_trusted-firmware-a
-	$ git checkout xxxxx
-	$ cd ..
+
+
 
 
 ---------------------------------------------------
 mbed
 ---------------------------------------------------
-NOTES: mbed code is needed to build Trusted Firmware-A in BSP v1.0.5+
+The MbedTLS code was needed to build Trusted Firmware-A up to version v2.8
+Starting with TF-A v2.9, MbedTLS is no longer needed.
+So if you are building old code (before 2023), you might need this.
 
-Clone repository and check out branch:
-	$ git clone https://github.com/ARMmbed/mbedtls.git
-	$ cd mbedtls
-	$ git checkout mbedtls-2.16.3
-	$ cd ..
-
-
----------------------------------------------------
-u-boot
----------------------------------------------------
-
-Branch information: https://github.com/renesas-rz/renesas-u-boot-cip/wiki
-
-Clone repository and check out xxxx branch:
-	$ git clone https://github.com/renesas-rz/renesas-u-boot-cip
-	$ cd renesas-u-boot-cip
-	$ git checkout xxxxx
-	$ cd ..
-
----------------------------------------------------
-kernel
----------------------------------------------------
-
-Branch information: https://github.com/renesas-rz/rz_linux-cip/wiki
-
-Clone repository and check out xxxx branch:
-	$ git clone https://github.com/renesas-rz/rz_linux-cip
-	$ cd rz_linux-cip
-	$ git checkout xxxx
-	cd ..
+$ git --branch mbedtls-2.28.1 clone https://github.com/ARMmbed/mbedtls.git
 
