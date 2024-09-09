@@ -19,6 +19,8 @@
 
 
 # Global Default Settings
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+
 FIP=0 # TF-A uses FIP instead of BL31
 EMMC_4BIT=0 # eMMC uses 4-bit data, not 8-bit
 if [ "$FW_GUI_MODE" == "" ] ; then
@@ -819,15 +821,15 @@ do_menu_file_uboot() {
 
 do_cmd_atf() {
 	FW_GUI_MODE=2
-	echo "./flash_writer_tool.sh atf"
-	./flash_writer_tool.sh atf
+	echo "${SCRIPT_DIR}/flash_writer_tool.sh atf"
+	"${SCRIPT_DIR}"/flash_writer_tool.sh atf
 	FW_GUI_MODE=1
 }
 
 do_cmd_all() {
 	FW_GUI_MODE=2
-	echo "./flash_writer_tool.sh all"
-	./flash_writer_tool.sh all
+	echo "${SCRIPT_DIR}/flash_writer_tool.sh all"
+	"${SCRIPT_DIR}"/flash_writer_tool.sh all
 	FW_GUI_MODE=1
 }
 
@@ -847,8 +849,8 @@ do_cmd() {
 	save_config
 	CONFIG_FILE=$CONFIG_FILE_SAVE  # restore
 
-	echo "FW_GUI_MODE=2 ./flash_writer_tool.sh $CFG_TMP_FILE $CMD"
-	FW_GUI_MODE=2 ./flash_writer_tool.sh $CFG_TMP_FILE $CMD
+	echo "FW_GUI_MODE=2 ${SCRIPT_DIR}/flash_writer_tool.sh $CFG_TMP_FILE $CMD"
+	FW_GUI_MODE=2 "${SCRIPT_DIR}"/flash_writer_tool.sh $CFG_TMP_FILE $CMD
 }
 
 save_config() {
