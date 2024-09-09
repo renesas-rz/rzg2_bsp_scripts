@@ -170,7 +170,7 @@ set_flash_address() {
     SPI_BL31_RAM="44000000"   ; SPI_BL31_FLASH="1C0000"
     SPI_UBOOT_RAM="50000000"  ; SPI_UBOOT_FLASH="300000"
     SPI_FIP_RAM=""            ; SPI_FIP_FLASH="" # not used
-   
+
     EMMC_SA0_RAM="E6320000"   ; EMMC_SA0_PART="1"   ; EMMC_SA0_SECTOR="000000"
     EMMC_BL2_RAM="E6304000"   ; EMMC_BL2_PART="1"   ; EMMC_BL2_SECTOR="00001E"
     EMMC_SA6_RAM="E6320000"   ; EMMC_SA6_PART="1"   ; EMMC_SA6_SECTOR="000180"
@@ -1104,7 +1104,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 	"f. $OP3 Program FIP     " "  FIP (Firmware Image Package)" \
 	"g. $OP1 Program u-boot  " "  u-boot (BL33, Non-trusted Firmware)" \
 	"h. $OP2 Program ATF     " "  Program all arm-trusted-firmware files (SA0,BL2,SA6,BL31,FIP)" \
-	"i. $OP1 Program All     " "  Programs all files (SA0,BL2,SA66,BL31 and u-boot)" \
+	"i. $OP1 Program All     " "  Programs all files (SA0,BL2,SA6,BL31 and u-boot)" \
 	"j. $OP4 eMMC boot setup " "  Configure an eMMC device for booting (only needed once)" \
 	"s. $FWR Show switches   " "  Show the switch settings for Renesas boards (in case you forgot)" \
 	3>&1 1>&2 2>&3)
