@@ -293,17 +293,16 @@ set_filenames() {
 		SA0_FILE=$FILES_DIR/bootparam_sa0.srec
 	fi
 	if [ "$BL2_FILE" == "" ] ; then
-		BL2_FILE=$FILES_DIR/bl2-${BOARD}.bin
+		BL2_FILE=$FILES_DIR/bl2-${BOARD}.srec
 	fi
 	if [ "$SA6_FILE" == "" ] ; then
 		SA6_FILE=$FILES_DIR/cert_header_sa6.srec
 	fi
 	if [ "$BL31_FILE" == "" ] ; then
-		BL31_FILE=$FILES_DIR/bl31-${BOARD}.bin
+		BL31_FILE=$FILES_DIR/bl31-${BOARD}.srec
 	fi
 	if [ "$UBOOT_FILE" == "" ] ; then
-		#UBOOT_FILE=$FILES_DIR/u-boot-elf-${BOARD}.srec
-		UBOOT_FILE=$FILES_DIR/u-boot.bin
+		UBOOT_FILE=$FILES_DIR/u-boot-elf-${BOARD}.srec
 	fi
   fi
 
