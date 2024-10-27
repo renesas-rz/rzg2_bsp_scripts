@@ -1107,9 +1107,9 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 	"h. $OP2 Program ATF     " "  Program all arm-trusted-firmware files (SA0,BL2,SA6,BL31,FIP)" \
 	"i. $OP1 Program All     " "  Programs all files (SA0,BL2,SA6,BL31 and u-boot)" \
 	"j. $OP4 eMMC boot setup " "  Configure an eMMC device for booting (only needed once)" \
-	"x1. $OP4 Erase BootPart1 " "  Erases eMMC Boot Partition 1 (needed when re-flashing to clear u-boot)" \
-	"x2. $OP4 Erase BootPart2 " "  Erases eMMC Boot Partition 2 (needed when re-flashing to clear u-boot env)" \
-	"x0. $OP4 Erase UserPart  " "  Erases eMMC User Partition 0 (optional)" \
+	"x1. $OP4 eMMC erase Boot 1 " "  Erases eMMC Boot Partition 1 (needed when re-flashing to clear u-boot)" \
+	"x2. $OP4 eMMC erase Boot 2 " "  Erases eMMC Boot Partition 2 (needed when re-flashing to clear u-boot env)" \
+	"x0. $OP4 eMMC erase User  " "  Erases eMMC User Partition 0 (optional)" \
 	"s. $FWR Show switches   " "  Show the switch settings for Renesas boards (in case you forgot)" \
 	3>&1 1>&2 2>&3)
     RET=$?
@@ -1157,9 +1157,9 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 
         *Download\ F.W.*) whiptail --title "Download mode" --msgbox "Make sure the board is configured for \"SCIF Download mode\" or \"USB Download mode\"\n\nPower on the board and press the RESET button.\n\nThen, press ENTER on the keyboard to continue." 0 0 ;
 		CMD=fw FILE_TO_SEND=$FLASHWRITER ; do_cmd ; export FW_NOT_DL_YET=0 ;;
-        *Erase\ UserPart*) CMD=x0 ; FILE_TO_SEND= ; do_cmd ;;
-        *Erase\ BootPart1*) CMD=x1 ; FILE_TO_SEND= ; do_cmd ;;
-        *Erase\ BootPart2*) CMD=x2 ; FILE_TO_SEND= ; do_cmd ;;
+        *eMMC\ erase\ User*) CMD=x0 ; FILE_TO_SEND= ; do_cmd ;;
+        *eMMC\ erase\ Boot\ 1*) CMD=x1 ; FILE_TO_SEND= ; do_cmd ;;
+        *eMMC\ erase\ Boot\ 2*) CMD=x2 ; FILE_TO_SEND= ; do_cmd ;;
         *Program\ SA0*) if [ "$FIP" == "1" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=sa0 ; FILE_TO_SEND=$SA0_FILE ; do_cmd ; fi ;;
         *Program\ BL2*) check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=bl2 ; FILE_TO_SEND=$BL2_FILE ; do_cmd ; fi ;;
         *Program\ SA6*) if [ "$FIP" == "1" ] ; then continue ; fi ; check_fw_first ; if [ "$CMD_ABORT" != "1" ] ; then CMD=sa6 ; FILE_TO_SEND=$SA6_FILE ; do_cmd ; fi ;;
