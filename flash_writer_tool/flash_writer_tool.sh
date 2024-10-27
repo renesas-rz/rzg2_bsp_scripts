@@ -1107,9 +1107,9 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 	"h. $OP2 Program ATF     " "  Program all arm-trusted-firmware files (SA0,BL2,SA6,BL31,FIP)" \
 	"i. $OP1 Program All     " "  Programs all files (SA0,BL2,SA6,BL31 and u-boot)" \
 	"j. $OP4 eMMC boot setup " "  Configure an eMMC device for booting (only needed once)" \
-	"x1. $OP4 eMMC erase Boot 1 " "  Erases eMMC Boot Partition 1 (needed when re-flashing to clear u-boot)" \
-	"x2. $OP4 eMMC erase Boot 2 " "  Erases eMMC Boot Partition 2 (needed when re-flashing to clear u-boot env)" \
-	"x0. $OP4 eMMC erase User  " "  Erases eMMC User Partition 0 (optional)" \
+	"x1.$OP4 eMMC erase Boot 1 " "  Erases eMMC Boot Partition 1 (needed when re-flashing to clear u-boot)" \
+	"x2.$OP4 eMMC erase Boot 2 " "  Erases eMMC Boot Partition 2 (needed when re-flashing to clear u-boot env)" \
+	"x0.$OP4 eMMC erase User  " "  Erases eMMC User Partition 0 (optional)" \
 	"s. $FWR Show switches   " "  Show the switch settings for Renesas boards (in case you forgot)" \
 	3>&1 1>&2 2>&3)
     RET=$?
