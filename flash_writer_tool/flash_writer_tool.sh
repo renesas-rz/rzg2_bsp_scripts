@@ -898,7 +898,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
   # Do not do this if you are in a SSH or docker session
   if [ "$DISPLAY" != "" ] ; then
     #printf '\033[8;40;120t'
-    resize -s 43 120  > /dev/null
+    resize -s 45 120  > /dev/null
   fi
 
   # Read what we used last time
@@ -1078,7 +1078,7 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 
     if [ "${SERIAL_DEVICE_INTERFACE:8:3}" == "ACM" ] ; then DL_TYPE="USB Download Mode" ; else DL_TYPE="SCIF Download Mode" ; fi
 
-    SELECT=$(whiptail --title "RZ/G2 Flash Writer Tool" --menu \
+    SELECT=$(whiptail --title "RZ Flash Writer Tool" --menu \
 	"Select your programming options.\nYou may use [ESC]+[ESC] to Cancel/Exit (no save). Use [Tab] key to select buttons.\n\nUse the <Change> button (or enter) to make changes.\n$CHANGE_TEXT" 0 0 0 --cancel-button $OK_TEXT --ok-button Change \
 	--default-item "$LAST_SELECT" \
 	"               Board:" "  $BOARD_NAME"  \
@@ -1097,20 +1097,20 @@ if [ "$FW_GUI_MODE" == "1" ] ; then
 	"           FIP_FILE:" "$FIP_EXIST $FIP_FILE_TEXT" \
 	"          UBOOT_FILE:" "$UBOOT_EXIST $UBOOT_FILE_TEXT" \
 	"______Operations_____" "" \
-	"a. $FWR Download F.W.   " "  Downloads the Flash Writer binary (must be run first)" \
-	"b. $OP1 Program SA0     " "  SA0 (Boot Parameters)" \
-	"c. $OP2 Program BL2     " "  BL2 (Trusted Boot Firmware)" \
-	"d. $OP1 Program SA6     " "  SA6 (Cert Header)" \
-	"e. $OP1 Program BL31    " "  BL31 (EL3 Runtime Software)" \
-	"f. $OP3 Program FIP     " "  FIP (Firmware Image Package)" \
-	"g. $OP1 Program u-boot  " "  u-boot (BL33, Non-trusted Firmware)" \
-	"h. $OP2 Program ATF     " "  Program all arm-trusted-firmware files (SA0,BL2,SA6,BL31,FIP)" \
-	"i. $OP1 Program All     " "  Programs all files (SA0,BL2,SA6,BL31 and u-boot)" \
-	"j. $OP4 eMMC boot setup " "  Configure an eMMC device for booting (only needed once)" \
-	"x1.$OP4 eMMC erase Boot 1 " "  Erases eMMC Boot Partition 1 (needed when re-flashing to clear u-boot)" \
-	"x2.$OP4 eMMC erase Boot 2 " "  Erases eMMC Boot Partition 2 (needed when re-flashing to clear u-boot env)" \
-	"x0.$OP4 eMMC erase User  " "  Erases eMMC User Partition 0 (optional)" \
-	"s. $FWR Show switches   " "  Show the switch settings for Renesas boards (in case you forgot)" \
+	"$FWR Download F.W.   " "  Downloads the Flash Writer binary (must be run first)" \
+	"$OP1 Program SA0     " "  SA0 (Boot Parameters)" \
+	"$OP2 Program BL2     " "  BL2 (Trusted Boot Firmware)" \
+	"$OP1 Program SA6     " "  SA6 (Cert Header)" \
+	"$OP1 Program BL31    " "  BL31 (EL3 Runtime Software)" \
+	"$OP3 Program FIP     " "  FIP (Firmware Image Package)" \
+	"$OP1 Program u-boot  " "  u-boot (BL33, Non-trusted Firmware)" \
+	"$OP2 Program ATF     " "  Program all arm-trusted-firmware files (SA0,BL2,SA6,BL31,FIP)" \
+	"$OP1 Program All     " "  Programs all files (SA0,BL2,SA6,BL31 and u-boot)" \
+	"$OP4 eMMC boot setup " "  Configure an eMMC device for booting (only needed once)" \
+	"$OP4 eMMC erase Boot 1 " "  Erases eMMC Boot Partition 1 (needed when re-flashing to clear u-boot)" \
+	"$OP4 eMMC erase Boot 2 " "  Erases eMMC Boot Partition 2 (needed when re-flashing to clear u-boot env)" \
+	"$OP4 eMMC erase User  " "  Erases eMMC User Partition 0 (optional)" \
+	"$FWR Show switches   " "  Show the switch settings for Renesas boards (in case you forgot)" \
 	3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ] ; then
