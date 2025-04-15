@@ -38,8 +38,14 @@ $ git clone --branch rz-5.10-cip41         https://github.com/renesas-rz/rz_linu
 
 
 
-
-
+-----------------------------------------------------
+Example:
+   RZ/T2H  according to RZ/T2H BSP V1.01
+-----------------------------------------------------
+ (no flash writer code)
+$ git clone --branch v2.3/rzg2l (tag 2.7.0/t2h_n2h_1.0.1)     https://github.com/renesas-rz/rzg_trusted-firmware-a.git
+$ git clone -b v2021.10/rzt2h --single-branch  https://github.com/renesas-rz/renesas-u-boot-cip.git
+$ git clone -b rzt2h-5.10-cip17 --single-branch https://github.com/renesas-rz/rz_linux-cip.git
 
 ---------------------------------------------------
 mbed

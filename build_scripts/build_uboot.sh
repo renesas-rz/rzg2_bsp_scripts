@@ -59,6 +59,13 @@ if [ "$MACHINE" == "ek874" ] ; then
   fi
 fi
 
+if [ "$MACHINE" == "dev-rzt2h" ] ; then
+  if [ -e "configs/rzt2h-dev_defconfig" ] ; then DEFCONFIG=rzt2h-dev_defconfig # original BSP
+  else DEFCONFIG=rzt2h-dev2_defconfig    # u-boot v2021.10 mainline and later
+  fi
+fi
+
+
 # Set the output directory (because I like all my build files separate from the source code)
 OUT=.out
 

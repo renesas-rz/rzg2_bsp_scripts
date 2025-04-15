@@ -158,7 +158,8 @@ if [ "$1" == "s" ] ; then
 	"6  smarc-rzg2lc" "Renesas SMARC RZ/G2LC" \
 	"7  smarc-rzg2ul" "Renesas SMARC RZ/G2UL" \
 	"8  smarc-rzv2l" "Renesas SMARC RZ/V2L" \
-  "9  smarc-rzg3s" "Renesas SMARC RZ/G3S" \
+	"9  smarc-rzg3s" "Renesas SMARC RZ/G3S" \
+  	"A  dev-rzt2h"   "Renesas DEV RZ/T2H" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -190,6 +191,7 @@ if [ "$1" == "s" ] ; then
 		FW_BOARD=RZV2L_SMARC
 	fi
       ;;
+      A\ *) FW_BOARD=RZT2H_DEV ; MACHINE=dev-rzt2h ; MPU=RZT2H ; TFA_FIP=1 ;;
       9\ *) FW_BOARD=RZG3S_SMARC ; MACHINE=smarc-rzg3s ; MPU=RZG3S ; TFA_FIP=1 ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1

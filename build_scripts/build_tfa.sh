@@ -56,7 +56,7 @@ if [ "$TFA_DEBUG" == "" ] ; then
 fi
 if [ "$TFA_FIP" == "" ] ; then
 
-  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] || [ "$MACHINE" == "smarc-rzv2l" ] || [ "$MACHINE" == "smarc-rzg2ul" ] || [ "$MACHINE" == "smarc-rzg3s" ]; then
+  if [ "$MACHINE" == "smarc-rzg2l" ] || [ "$MACHINE" == "smarc-rzg2lc" ] || [ "$MACHINE" == "smarc-rzv2l" ] || [ "$MACHINE" == "smarc-rzg2ul" ] || [ "$MACHINE" == "smarc-rzg3s" ] || ["$MACHINE" == "dev-rzt2h" ] ; then
     TFA_FIP=1
   else
     TFA_FIP=0
@@ -187,7 +187,6 @@ do_debug_menu() {
 
   ##############################
   create_bootparams() {
-
       # Create bootparams.bin
       # - bootparams.bin totls size is 512 bytes
       # - First 4 bytes is the size of bl2.bin (4-byte aligned)
@@ -472,6 +471,7 @@ BUILD_THREADS=$(expr $NPROC + $NPROC)
 echo "cd $TFA_DIR"
 cd $TFA_DIR
 
+
 if [ "$TFA_FIP" == "1" ] && [ ! -e "$OUT_DIR/u-boot.bin" ] ; then
   echo -e "\nERROR: You must build u-boot first since it is added to the BL31/FIP image".
   exit
@@ -529,6 +529,10 @@ case "$MPU" in
     ;;
   "RZG3S")
     PLATFORM=g3s
+    TOOL=
+    ;;
+    "RZT2H")
+    PLATFORM=t2h
     TOOL=
     ;;
 esac
@@ -597,6 +601,9 @@ case "$MACHINE" in
     TFA_OPT="BOARD=smarc"
     ;;
 
+  "dev-rzt2h")
+    TFA_OPT="BOARD=dev_1 PLATFORM_CORE_COUNT=4 BL33=$OUT_DIR/u-boot.bin bl2 fip pkg"
+    ;;
   "ek874")
     TFA_OPT="LSI=G2E RCAR_DRAM_DDR3L_MEMCONF=1 RCAR_DRAM_DDR3L_MEMDUAL=1 SPD="none" $G2E_ECC $G2E_LOSSY"
 
@@ -617,7 +624,6 @@ case "$MACHINE" in
     ;;
   "hihope-rzg2h")
     TFA_OPT="LSI=G2H RZG_DRAM_SPLIT=2 RZG_DRAM_LPDDR4_MEMCONF=1 RCAR_DRAM_CHANNEL=5 SPD="none" $G2H_ECC $G2H_LOSSY"
-
     # Common Settings for RZ/G2H
     TFA_OPT="$TFA_OPT RCAR_RPC_HYPERFLASH_LOCKED=0"
     ;;
@@ -678,7 +684,12 @@ fi
 CMD="make -j $BUILD_THREADS bl2 bl31 ${TOOL} PLAT=${PLATFORM} ${TFA_OPT} RZG_DRAM_ECC_FULL=${TFA_ECC_FULL} LOG_LEVEL=$TFA_LOG_LEVEL ${ADD_DEBUG} \
 	MBEDTLS_DIR=$MBEDTLS_DIR \
 	$1 $2 $3"
+if [ "$MACHINE" == "dev-rzt2h" ] ; then
+  CMD="make -j 1 PLAT=t2h BOARD=dev_1 PLATFORM_CORE_COUNT=4 BL33=$OUT_DIR/u-boot.bin bl2 fip pkg"
+fi
+
 echo "$CMD"
+
 $CMD
 
 # If this was just a clean, exit now
@@ -687,7 +698,7 @@ if [ ! -e "build/${PLATFORM}/$BUILD_DIR/bl2/bl2.elf" ] ; then
 fi
 
 # FIP build
-if [ "$TFA_FIP" == "1" ] ; then
+if [ "$TFA_FIP" == "1" ] &&  [ "$MACHINE" != "dev-rzt2h" ] ; then
   if [ "$MPU" == "RZG3S" ] ; then
     create_bootparams_bptool
   else
@@ -699,7 +710,7 @@ if [ "$TFA_FIP" == "1" ] ; then
   exit
 fi
 
-
+if [ "$MACHINE" != "dev-rzt2h" ] ; then
 # Copy files to deploy folder
 DEPLOYDIR=z_deploy
 mkdir -p $DEPLOYDIR
@@ -754,5 +765,48 @@ if [ -e build/${PLATFORM}/release/bl2.bin ] && [ "$OUT_DIR" != "" ] ; then
   # Use the same filenames as the Yocto output
   #cp -v $OUT/u-boot.bin $OUT_DIR/u-boot-${MACHINE}.bin
   #cp -v $OUT/u-boot.srec $OUT_DIR//u-boot-${MACHINE}.srec
+fi
+
+else
+
+#if [ "$MACHINE" == "dev-rzt2h" ] ; then   #/dev-t2h
+# Save what build this was
+CURRENT_BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+echo "Built from branch \"$CURRENT_BRANCH\"" > $OUT_DIR/t2h-build_version.txt
+echo -e "\nOutput t2h-build_version.txt copied to directory $OUT_DIR\n"
+
+# copy to output directory
+if [ -e build/${PLATFORM}/release/bl2.bin ] && [ "$OUT_DIR" != "" ] ; then
+
+  mkdir -p $OUT_DIR
+  cp build/${PLATFORM}/release/bl2_bp_xspi0.bin   $OUT_DIR/bl2_bp_xspi0-${MACHINE}.bin
+  cp build/${PLATFORM}/release/bl2_bp_xspi1.bin   $OUT_DIR/bl2_bp_xspi1-${MACHINE}.bin
+  cp build/${PLATFORM}/release/bl2_bp_emmc.bin   $OUT_DIR/bl2_bp_emmc-${MACHINE}.bin
+  cp build/${PLATFORM}/release/bl2_bp_esd.bin   $OUT_DIR/bl2_bp_esd-${MACHINE}.bin
+  cp build/${PLATFORM}/release/fip.bin   $OUT_DIR/fip-${MACHINE}.bin
+  cp build/${PLATFORM}/release/bl2_bp_xspi0.srec   $OUT_DIR/bl2_bp_xspi0-${MACHINE}.srec
+  cp build/${PLATFORM}/release/bl2_bp_xspi1.srec   $OUT_DIR/bl2_bp_xspi1-${MACHINE}.srec
+  cp build/${PLATFORM}/release/bl2_bp_emmc.srec   $OUT_DIR/bl2_bp_emmc-${MACHINE}.srec
+  cp build/${PLATFORM}/release/bl2_bp_esd.srec   $OUT_DIR/bl2_bp_esd-${MACHINE}.srec
+  cp build/${PLATFORM}/release/fip.srec   $OUT_DIR/fip-${MACHINE}.srec
+
+  echo -e "\nOutput files copied to output directory $OUT_DIR\n"
+
+  # Save what this was build with
+  echo "MACHINE=$MACHINE" > $OUT_DIR/manifest_tfa.txt
+  echo "BOARD_VERSION=$BOARD_VERSION" > $OUT_DIR/manifest_tfa.txt
+  echo "TFA_BOOT=$TFA_BOOT" >> $OUT_DIR/manifest_tfa.txt
+  echo "TFA_LOG_LEVEL=$TFA_LOG_LEVEL" >> $OUT_DIR/manifest_tfa.txt
+  echo "TFA_ECC_FULL=$TFA_ECC_FULL" >> $OUT_DIR/manifest_tfa.txt
+  echo "TFA_TOOLCHAIN_SETUP_NAME=$TFA_TOOLCHAIN_SETUP_NAME" >> $OUT_DIR/manifest_tfa.txt
+  CURRENT_BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+  echo "Built from branch \"$CURRENT_BRANCH\"" >> $OUT_DIR/manifest_tfa.txt
+
+
+  # Use the same filenames as the Yocto output
+  #cp -v $OUT/u-boot.bin $OUT_DIR/u-boot-${MACHINE}.bin
+  #cp -v $OUT/u-boot.srec $OUT_DIR//u-boot-${MACHINE}.srec
+
+fi
 fi
 

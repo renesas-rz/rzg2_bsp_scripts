@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #---------------------------------------------------------------------------
 # Please read the README.md file first for proper setup
 #---------------------------------------------------------------------------
@@ -37,7 +36,7 @@ if [ "$MACHINE" == "smarc-rzg2lc" ] ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG
 if [ "$MACHINE" == "smarc-rzg2ul" ] ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG2L" ; fi
 if [ "$MACHINE" == "smarc-rzv2l" ]  ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZV2L" ; fi
 if [ "$MACHINE" == "smarc-rzg3s" ]  ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG3S" ; fi
-
+if [ "$MACHINE" == "dev-rzt2h" ]    ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZT2H" ; fi
 
 
 do_toolchain_menu() {
@@ -220,7 +219,6 @@ if [ "$1" == "make_config" ] ; then
   #git checkout arch/arm64/configs/defconfig
   exit
 fi
-
 if [ "$1" == "deploy" ] && [ "$BSP_TYPE" == "RZG2" ] ; then
 
   mkdir -p $DEPLOY_DIR
@@ -295,6 +293,10 @@ deploy_bsp() {
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a08g045s33-smarc.dtb" "$DEPLOY_DIR/$MACHINE"
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a08g045s33-smarc.dtb" "$DEPLOY_DIR/$MACHINE/Image-r9a08g045s33-smarc.dtb"
         ;;
+    "dev-rzt2h")
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a09g077m44-dev.dtb" "$DEPLOY_DIR/$MACHINE"
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a09g077m44-dev.dtb" "$DEPLOY_DIR/$MACHINE/r9a09g077m44-dev.dtb"
+        ;;
     *)
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a*.dtb" "$DEPLOY_DIR/$MACHINE"
         ;;
@@ -313,7 +315,7 @@ deploy_bsp() {
 
 # Deploy if the command is "deploy" and BSP_TYPE matches
 if [ "$1" == "deploy" ]; then
-    if [ "$BSP_TYPE" == "RZG2L" ] || [ "$BSP_TYPE" == "RZV2L" ] || [ "$BSP_TYPE" == "RZG3S" ]; then
+    if [ "$BSP_TYPE" == "RZG2L" ] || [ "$BSP_TYPE" == "RZV2L" ] || [ "$BSP_TYPE" == "RZG3S" ] || [ "$BSP_TYPE" == "RZT2H" ]; then
         deploy_bsp
         exit
     fi
@@ -324,9 +326,8 @@ MAKE="make -j$BUILD_THREADS O=$OUT"
 
 # If this is the first time building, we need to configure first
 if [ ! -e "$OUT/.config" ] && [ "$1" != "defconfig" ] ; then
-  echo "ERROR: First you must run: ./build.sh make_config"
+  echo "ERROR: First you must run: ./build.sh k make_config"
   exit
 fi
-
 CMD="$MAKE $1 $2 $3"
 echo $CMD ; $CMD
