@@ -14,6 +14,7 @@
 #MACHINE=smarc-rzv2l    # Renesas SMARC RZ/V2L
 #MACHINE=smarc-rzg2ul   # Renesas SMARC RZ/G2UL
 #MACHINE=smarc-rzg3s    # Renesas SMARC RZ/G3S
+#MACHINE=rzv2h-evk-ver1    # Renesas RZ/V2H EVK 
 
 # Read in functions from build_common.sh
 if [ ! -e build_common.sh ] ; then
@@ -33,6 +34,7 @@ read_setting
 # smarc-rzg2ul_defconfig
 # smarc-rzv2l_defconfig
 # smarc-rzg3s_defconfig
+# rzv2h-evk-ver1_defconfig
 if [ "$DEFCONFIG" = "" ] ; then
   DEFCONFIG="${MACHINE}_defconfig"
 fi

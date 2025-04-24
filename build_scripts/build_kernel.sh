@@ -37,6 +37,7 @@ if [ "$MACHINE" == "smarc-rzg2ul" ] ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG
 if [ "$MACHINE" == "smarc-rzv2l" ]  ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZV2L" ; fi
 if [ "$MACHINE" == "smarc-rzg3s" ]  ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZG3S" ; fi
 if [ "$MACHINE" == "dev-rzt2h" ]    ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZT2H" ; fi
+if [ "$MACHINE" == "rzv2h-evk-ver1" ]    ; then DEFCONFIG="defconfig" ; BSP_TYPE="RZV2H" ; fi
 
 
 do_toolchain_menu() {
@@ -297,6 +298,10 @@ deploy_bsp() {
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a09g077m44-dev.dtb" "$DEPLOY_DIR/$MACHINE"
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a09g077m44-dev.dtb" "$DEPLOY_DIR/$MACHINE/r9a09g077m44-dev.dtb"
         ;;
+    "rzv2h-evk-ver1")
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dtb" "$DEPLOY_DIR/$MACHINE"
+        cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a09g057h4-evk-ver1.dtb" "$DEPLOY_DIR/$MACHINE/r9a09g057h4-evk-ver1.dtb"
+        ;;
     *)
         cp -v "$OUT/arch/arm64/boot/dts/renesas/r9a*.dtb" "$DEPLOY_DIR/$MACHINE"
         ;;
@@ -315,7 +320,7 @@ deploy_bsp() {
 
 # Deploy if the command is "deploy" and BSP_TYPE matches
 if [ "$1" == "deploy" ]; then
-    if [ "$BSP_TYPE" == "RZG2L" ] || [ "$BSP_TYPE" == "RZV2L" ] || [ "$BSP_TYPE" == "RZG3S" ] || [ "$BSP_TYPE" == "RZT2H" ]; then
+    if [ "$BSP_TYPE" == "RZG2L" ] || [ "$BSP_TYPE" == "RZV2L" ] || [ "$BSP_TYPE" == "RZG3S" ] || [ "$BSP_TYPE" == "RZT2H" ] || [ "$BSP_TYPE" == "RZV2H" ]; then
         deploy_bsp
         exit
     fi

@@ -28,9 +28,10 @@
 # MACHINE=smarc-rzv2l	# Renesas RZ/V2L EVK
 #   BOARD_VERSION: DISCRETE, PMIC
 # MACHINE=smarc-rzg3s	# Renesas RZ/G3S EVK
+# MACHINE=rzv2h-evk-1 # Renesas RZ/V2H EVK 
 
 # Supported MPU
-# RZG2H, RZG2N, RZG2M, RZG2E, RZG2L, RZG2LC, RZG2UL, RZV2L, RZG3S
+# RZG2H, RZG2N, RZG2M, RZG2E, RZG2L, RZG2LC, RZG2UL, RZV2L, RZG3S, RZV2H
 
 #----------------------------------------------
 # Default Settings
@@ -160,6 +161,7 @@ if [ "$1" == "s" ] ; then
 	"8  smarc-rzv2l" "Renesas SMARC RZ/V2L" \
 	"9  smarc-rzg3s" "Renesas SMARC RZ/G3S" \
   	"A  dev-rzt2h"   "Renesas DEV RZ/T2H" \
+    "B  rzv2h-evk-ver1" "Renesas EVK RZ/V2H" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
@@ -193,6 +195,7 @@ if [ "$1" == "s" ] ; then
       ;;
       A\ *) FW_BOARD=RZT2H_DEV ; MACHINE=dev-rzt2h ; MPU=RZT2H ; TFA_FIP=1 ;;
       9\ *) FW_BOARD=RZG3S_SMARC ; MACHINE=smarc-rzg3s ; MPU=RZG3S ; TFA_FIP=1 ;;
+      B\ *) FW_BOARD=RZV2H_EVK ; MACHINE=rzv2h-evk-ver1 ; MPU=RZV2H ; TFA_FIP=1 ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
   else
