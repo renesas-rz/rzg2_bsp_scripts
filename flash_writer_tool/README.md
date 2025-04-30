@@ -2,15 +2,19 @@
 * A script for automating the programming of boot loaders using the Renesas rzg2_flash_writer software utility.
 
 ## Supported Renesas evaluation boards
-* RZ/G2H HiHope
-* RZ/G2M HiHope
-* RZ/G2N HiHope
-* RZ/G2E EK874
-* RZ/G2L SMARC
-* RZ/G2LC SMARC
-* RZ/G2UL SMARC
-* RZ/V2L SMARC
-* RZ/G3S SMARC
+* RZ/G3
+  * RZ/G3S SMARC
+* RZ/G2
+  * RZ/G2H HiHope
+  * RZ/G2M HiHope
+  * RZ/G2N HiHope
+  * RZ/G2E EK874
+  * RZ/G2L SMARC
+  * RZ/G2LC SMARC
+  * RZ/G2UL SMARC
+* RZ/V2
+  * RZ/V2H EVK
+  * RZ/V2L SMARC
 
 ## Program Bootloaders using internal ROM and Flashwriter
 
@@ -27,7 +31,7 @@
  
 **Options #1 : Clone entire repository in the base of the Yocto directory:**
 <pre>
-$ cd ~/yocto/rzg_bsp_v3.0.5
+$ cd ~/yocto/rzg_bsp_v3.0.7
 $ git clone https://github.com/renesas-rz/rzg2_bsp_scripts
 $ cd rzg2_bsp_scripts/flash_writer_tool
 $ ./flash_writer_tool.sh
@@ -35,7 +39,7 @@ $ ./flash_writer_tool.sh
 
 **Options #2 : Download just the script file in the Yoto output directory:**
 <pre>
-$ cd ~/yocto/rzg_bsp_v3.0.5/build/tmp/deploy/images/smarc-rzg2l
+$ cd ~/yocto/rzg_bsp_v3.0.7/build/tmp/deploy/images/smarc-rzg2l
 $ wget https://raw.githubusercontent.com/renesas-rz/rzg2_bsp_scripts/master/flash_writer_tool/flash_writer_tool.sh
 $ chmod +x flash_writer_tool.sh
 $ ./flash_writer_tool.sh

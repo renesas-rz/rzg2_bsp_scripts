@@ -158,6 +158,36 @@ Use switches ${SW_NAME} on Carrier board to set the boot mode.
       +---------+           +---------+           +---------+
 "
   fi
+
+  if [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
+	BOARD_NAME="RZ/V2H EVK by Renesas"
+	SW_SETTINGS="Please TURN OFF board power when changing switch settings.
+Switch settings for DSW1.
+
+	xSPI Flash boot            eMMC boot
+	--------------             ---------
+	1 = xx                     1 = xx
+	2 = xx                     2 = xx
+	3 = xx                     3 = xx
+	4 = OFF                    4 = ON
+	5 = OFF                    5 = ON
+	6 = xx                     6 = xx
+	7 = xx                     7 = xx
+	8 = xx                     8 = xx
+
+	SCIF Download mode         eSD boot mode
+	------------------         -----------------
+	1 = xx                     1 = xx
+	2 = xx                     2 = xx
+	3 = xx                     3 = xx
+	4 = OFF                    4 = ON
+	5 = ON                     5 = OFF
+	6 = xx                     6 = xx
+	7 = xx                     7 = xx
+	8 = xx                     8 = xx
+"
+  fi
+
 }
 
 # The Flash and RAM address for each device is different.
@@ -219,6 +249,26 @@ set_flash_address() {
     EMMC_UBOOT_RAM=""        ; EMMC_UBOOT_PART="" ; EMMC_UBOOT_SECTOR="" # not used
     EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1" ; EMMC_FIP_SECTOR="100"
   fi
+
+  if [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
+
+    LONGER_CMD_DELAY=1	# These parts need more time between sending commands
+
+    SPI_SA0_RAM=""      ; SPI_SA0_FLASH="" # not used
+    SPI_BL2_RAM="8101E00" ; SPI_BL2_FLASH="0"
+    SPI_SA6_RAM=""      ; SPI_SA6_FLASH="" # not used
+    SPI_BL31_RAM=""     ; SPI_BL31_FLASH="" # not used
+    SPI_UBOOT_RAM=""    ; SPI_UBOOT_FLASH="" # not used
+    SPI_FIP_RAM="0"     ; SPI_FIP_FLASH="60000"
+
+    EMMC_SA0_RAM=""          ; EMMC_SA0_PART=""   ; EMMC_SA0_SECTOR=""   # not used
+    EMMC_BL2_RAM="11E00"     ; EMMC_BL2_PART="1"  ; EMMC_BL2_SECTOR="1"
+    EMMC_SA6_RAM=""          ; EMMC_SA6_PART=""   ; EMMC_SA6_SECTOR=""   # not used
+    EMMC_BL31_RAM=""         ; EMMC_BL31_PART=""  ; EMMC_BL31_SECTOR=""  # not used
+    EMMC_UBOOT_RAM=""        ; EMMC_UBOOT_PART="" ; EMMC_UBOOT_SECTOR="" # not used
+    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1" ; EMMC_FIP_SECTOR="100"
+  fi
+
 }
 
 clear_filenames() {
@@ -309,7 +359,7 @@ set_filenames() {
   fi
 
   if [ "$BOARD" == "smarc-rzg2l" ] || [ "$BOARD" == "smarc-rzg2lc" ] || [ "$BOARD" == "smarc-rzg2ul" ] || \
-     [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3s" ] ; then
+     [ "$BOARD" == "smarc-rzv2l" ] || [ "$BOARD" == "smarc-rzg3s" ] || [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
 
 	FIP=1
 	EMMC_4BIT=1
@@ -343,6 +393,12 @@ set_filenames() {
 	fi
 	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "smarc-rzg3s" ]; then
 		FLASHWRITER="$FILES_DIR/FlashWriter-smarc-rzg3s.mot"
+	fi
+	if [ "$FLASHWRITER" == "" ] && [ "$BOARD" == "rzv2h-evk-ver1" ]; then
+		FLASHWRITER="$FILES_DIR/Flash_Writer_SCIF_RZV2H_DEV_INTERNAL_MEMORY.mot"
+
+		BL2_FILE=$FILES_DIR/bl2_bp_spi-rzv2h-evk-ver1.srec
+		FIP_FILE=$FILES_DIR/fip-rzv2h-evk-ver1.srec
 	fi
 	if [ "$BL2_FILE" == "" ] ; then
 		BL2_FILE=$FILES_DIR/bl2_bp-${BOARD}.bin
@@ -486,27 +542,28 @@ do_menu_config() {
 
 do_menu_board() {
   SELECT=$(whiptail --title "Board Selection" --menu "You may use ESC+ESC to cancel." 0 0 0 \
-	"1 ek874"        "  EK874 RZ/G2E by Silicon Linux" \
-	"2 hihope-rzg2m" "  HiHope RZ/G2M by Hoperun Technology" \
-	"3 hihope-rzg2n" "  HiHope RZ/G2N by Hoperun Technology" \
-	"4 hihope-rzg2h" "  HiHope RZ/G2H by Hoperun Technology" \
-	"5 smarc-rzg2l " "  SMARC RZ/G2L by Renesas Electronics" \
-	"6 smarc-rzg2lc " " SMARC RZ/G2LC by Renesas Electronics" \
-	"7 smarc-rzg2ul " " SMARC RZ/G2UL by Renesas Electronics" \
-	"8 smarc-rzv2l " "  SMARC RZ/V2L by Renesas Electronics" \
-	"9 smarc-rzg3s " "  SMARC RZ/G3S by Renesas Electronics" \
-	"0 CUSTOM"       "  (manually edit ini file)" \
+	"ek874"        "  EK874 RZ/G2E by Silicon Linux" \
+	"hihope-rzg2m" "  HiHope RZ/G2M by Hoperun Technology" \
+	"hihope-rzg2n" "  HiHope RZ/G2N by Hoperun Technology" \
+	"hihope-rzg2h" "  HiHope RZ/G2H by Hoperun Technology" \
+	"smarc-rzg2l " "  SMARC RZ/G2L by Renesas Electronics" \
+	"smarc-rzg2lc " " SMARC RZ/G2LC by Renesas Electronics" \
+	"smarc-rzg2ul " " SMARC RZ/G2UL by Renesas Electronics" \
+	"smarc-rzv2l " "  SMARC RZ/V2L by Renesas Electronics" \
+	"smarc-rzg3s " "  SMARC RZ/G3S by Renesas Electronics" \
+	"rzv2h-evk-ver1" "RZ/V2H EVK by Renesas Electronics" \
+	"CUSTOM"       "  (manually edit ini file)" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
     FIP=0
     EMMC_4BIT=0
     case "$SELECT" in
-      1\ *) BOARD=ek874 ;;
-      2\ *) BOARD=hihope-rzg2m ;;
-      3\ *) BOARD=hihope-rzg2n ;;
-      4\ *) BOARD=hihope-rzg2h ;;
-      5\ *) BOARD=smarc-rzg2l ; FIP=1 ; EMMC_4BIT=1
+      ek874) BOARD=ek874 ;;
+      hihope-rzg2m) BOARD=hihope-rzg2m ;;
+      hihope-rzg2n) BOARD=hihope-rzg2n ;;
+      hihope-rzg2h) BOARD=hihope-rzg2h ;;
+      smarc-rzg2l) BOARD=smarc-rzg2l ; FIP=1 ; EMMC_4BIT=1
 	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?\n\nThe PMIC version has \"Reneas\" printed in the middle of the SOM board.\nThe Discrete version has \"Renesas\" printed at the edge of the SOM baord.   " 0 0 0
 	if [ "$?" == "0" ] ; then
 		BOARD_VERSION="PMIC"
@@ -514,9 +571,9 @@ do_menu_board() {
 		BOARD_VERSION="DISCRETE"
 	fi
       ;;
-      6\ *) BOARD=smarc-rzg2lc ; FIP=1 ; EMMC_4BIT=1 ;;
-      7\ *) BOARD=smarc-rzg2ul ; FIP=1 ; EMMC_4BIT=1 ;;
-      8\ *) BOARD=smarc-rzv2l ; FIP=1 ; EMMC_4BIT=1
+      smarc-rzg2lc) BOARD=smarc-rzg2lc ; FIP=1 ; EMMC_4BIT=1 ;;
+      smarc-rzg2ul) BOARD=smarc-rzg2ul ; FIP=1 ; EMMC_4BIT=1 ;;
+      smarc-rzv2l) BOARD=smarc-rzv2l ; FIP=1 ; EMMC_4BIT=1
 	whiptail --yesno --yes-button PMIC_Power --no-button Discrete_Power "Board Version:\n\nIs the board 'PMIC Power' version or the 'Discrete Power' version?" 0 0 0
 	if [ "$?" == "0" ] ; then
 		BOARD_VERSION="PMIC"
@@ -524,8 +581,9 @@ do_menu_board() {
 		BOARD_VERSION="DISCRETE"
 	fi
       ;;
-      9\ *) BOARD=smarc-rzg3s ; FIP=1 ; EMMC_4BIT=1 ;;
-      0\ *) BOARD=CUSTOM ;;
+      smarc-rzg3s) BOARD=smarc-rzg3s ; FIP=1 ; EMMC_4BIT=1 ;;
+      rzv2h-evk-ver1) BOARD=rzv2h-evk-ver1 ; FIP=1 ; EMMC_4BIT=1 ;;
+      CUSTOM) BOARD=CUSTOM ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $SELECT" 20 60 1
 
