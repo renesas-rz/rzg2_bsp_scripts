@@ -243,11 +243,11 @@ set_flash_address() {
     SPI_FIP_RAM="0"     ; SPI_FIP_FLASH="64000"
 
     EMMC_SA0_RAM=""          ; EMMC_SA0_PART=""   ; EMMC_SA0_SECTOR=""   # not used
-    EMMC_BL2_RAM="11E00"     ; EMMC_BL2_PART="1"  ; EMMC_BL2_SECTOR="1"
+    EMMC_BL2_RAM="A1E00"     ; EMMC_BL2_PART="1"  ; EMMC_BL2_SECTOR="1"
     EMMC_SA6_RAM=""          ; EMMC_SA6_PART=""   ; EMMC_SA6_SECTOR=""   # not used
     EMMC_BL31_RAM=""         ; EMMC_BL31_PART=""  ; EMMC_BL31_SECTOR=""  # not used
     EMMC_UBOOT_RAM=""        ; EMMC_UBOOT_PART="" ; EMMC_UBOOT_SECTOR="" # not used
-    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1" ; EMMC_FIP_SECTOR="100"
+    EMMC_FIP_RAM="0"         ; EMMC_FIP_PART="1" ; EMMC_FIP_SECTOR="320"
   fi
 
   if [ "$BOARD" == "rzv2h-evk-ver1" ] ; then
