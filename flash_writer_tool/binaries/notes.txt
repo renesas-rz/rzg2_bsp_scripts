@@ -4,7 +4,7 @@
 
 # Below was how these rzg2_flash_writer binaries were created.
 #
-# When the binaiers are created, they only enalbe the features that were needed.
+# When the binaiers are created, they only enable the features that were needed.
 # The reason was to keep the .mot size as small as possible to reduce how long it
 # takes to download to the board.
 # Also, since the RZ/G2E has a small internal RAM, you cannot enable many features
