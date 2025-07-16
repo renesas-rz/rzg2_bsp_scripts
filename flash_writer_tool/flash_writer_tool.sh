@@ -542,17 +542,17 @@ do_menu_config() {
 
 do_menu_board() {
   SELECT=$(whiptail --title "Board Selection" --menu "You may use ESC+ESC to cancel." 0 0 0 \
-	"ek874"        "  EK874 RZ/G2E by Silicon Linux" \
-	"hihope-rzg2m" "  HiHope RZ/G2M by Hoperun Technology" \
-	"hihope-rzg2n" "  HiHope RZ/G2N by Hoperun Technology" \
-	"hihope-rzg2h" "  HiHope RZ/G2H by Hoperun Technology" \
-	"smarc-rzg2l " "  SMARC RZ/G2L by Renesas Electronics" \
-	"smarc-rzg2lc " " SMARC RZ/G2LC by Renesas Electronics" \
-	"smarc-rzg2ul " " SMARC RZ/G2UL by Renesas Electronics" \
-	"smarc-rzv2l " "  SMARC RZ/V2L by Renesas Electronics" \
-	"smarc-rzg3s " "  SMARC RZ/G3S by Renesas Electronics" \
-	"rzv2h-evk-ver1" "RZ/V2H EVK by Renesas Electronics" \
-	"CUSTOM"       "  (manually edit ini file)" \
+	"ek874"          "  EK874 RZ/G2E by Silicon Linux" \
+	"hihope-rzg2m"   "  HiHope RZ/G2M by Hoperun Technology" \
+	"hihope-rzg2n"   "  HiHope RZ/G2N by Hoperun Technology" \
+	"hihope-rzg2h"   "  HiHope RZ/G2H by Hoperun Technology" \
+	"smarc-rzg2l"    "  SMARC RZ/G2L by Renesas Electronics" \
+	"smarc-rzg2lc"   "  SMARC RZ/G2LC by Renesas Electronics" \
+	"smarc-rzg2ul"   "  SMARC RZ/G2UL by Renesas Electronics" \
+	"smarc-rzv2l"    "  SMARC RZ/V2L by Renesas Electronics" \
+	"smarc-rzg3s"    "  SMARC RZ/G3S by Renesas Electronics" \
+	"rzv2h-evk-ver1" "  RZ/V2H EVK by Renesas Electronics" \
+	"CUSTOM"         "  (manually edit ini file)" \
 	3>&1 1>&2 2>&3)
   RET=$?
   if [ $RET -eq 0 ] ; then
