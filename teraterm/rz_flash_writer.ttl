@@ -1,5 +1,5 @@
-; Copyright (C) 2024 Renesas Electronics Corp.
-;
+; Copyright (C) 2026 Renesas Electronics Corp.
+; 
 ; ##################### Macro Parameters ############################
 
 ; This is the Flash Writer srec.
@@ -10,19 +10,20 @@
 ;FLASH_WRITER = "Flash_Writer_SCIF_RZG2L_SMARC_PMIC_DDR4_2GB_1PCS_TBB.mot"
 ;FLASH_WRITER = "Flash_Writer_SCIF_RZG2UL_SMARC_DDR4_1GB_1PCS.mot"
 ;FLASH_WRITER = "Flash_Writer_SCIF_RZFIVE_SMARC.mot"
-FLASH_WRITER = "FlashWriter-smarc-rzg3s.mot"
+;FLASH_WRITER = "FlashWriter-smarc-rzg3s.mot"
+FLASH_WRITER = "Flash_Writer_SCIF_RZG3E_EVK_LPDDR4X.mot"
 
-; COM port
-COM = 6
+; COM port 
+COM = 7
 
 ; Directory containing Binaries
 DIR = "Binaries/"
 
 ; Program QSPI or eMMC. QSPI -> 1, eMMC -> 0
-QSPI_NOT_eMMC = 1
+QSPI_NOT_eMMC = 0
 
 ; When eMMC is selected, choose eMMC boot partition 1 or 2
-eMMC_BOOT_PART_TARGET = 2
+eMMC_BOOT_PART_TARGET = 1
 
 ; Remove any user dialog apart from error
 ; 1 to remove dialogs, 0 to keep them
@@ -32,7 +33,7 @@ UNATTENDED = 1
 ; 0 do not use high baud
 ; 1 use high baud via "SUP" command (make sure Flash Writer supports it)
 ; 2 use high baud via additional accelerator loader (minimal_baudrate_SCIF.mot)
-;   Note: this option works with RZ/G2L only
+;   Note: this option works with RZ/G2L-V2L only
 ; 0 slowest, 2 fastest
 USE_HIGH_BAUD = 1
 
@@ -46,7 +47,14 @@ ENV_VAR_START_ADDRESS = "FB00"
 ; 0 -> RZ/G2L, RZ/G2LC, RZ/G2UL, RZ/V2L
 ; 1 -> RZ/FIVE
 ; 2 -> RZ/G3S
-DEVICE = 2
+; 3 -> RZ/G3E
+DEVICE = 3
+
+; Choose boot loaders version (valid only for RZ/G2L, RZ/G2LC, RZ/G2UL, RZ/V2L)
+; 0 -> ATF 2.9 and u-boot 2021.10 (VLP3)
+; 1 -> ATF 2.9 and u-boot 2024.07 (VLP4+)
+BL_VERSION = 0
+
 
 ; #### Normally you do not need to modify anything below this line ####
 
@@ -101,11 +109,20 @@ intdim SREC_NOT_BIN_TABLE IMAGE_NUM
 ; FLASH_ADDRESS_TABLE[X] (hardcoded)
 FLASH_ADDRESS_TABLE[0] = "00000"
 if DEVICE=0 then
-   FLASH_ADDRESS_TABLE[1] = "1D200"
+   if BL_VERSION=0 then
+      FLASH_ADDRESS_TABLE[1] = "1D200"
+   elseif BL_VERSION=1 then
+      FLASH_ADDRESS_TABLE[1] = "20000"
+   endif
 elseif DEVICE=1 then
    FLASH_ADDRESS_TABLE[1] = "20000"
 elseif DEVICE=2 then
+;split1
    FLASH_ADDRESS_TABLE[1] = "64000"
+;split2
+;  FLASH_ADDRESS_TABLE[1] = "145000"
+elseif DEVICE=3 then
+   FLASH_ADDRESS_TABLE[1] = "60000"
 endif
 
 ; eMMC sector
@@ -116,6 +133,8 @@ elseif DEVICE=1 then
    FLASH_ADDRESS_TABLE[3] = "100"
 elseif DEVICE=2 then
    FLASH_ADDRESS_TABLE[3] = "320"
+elseif DEVICE=3 then
+   FLASH_ADDRESS_TABLE[3] = "300"
 endif
 
 ; TOP_ADDRESS_TABLE[X] (hardcoded)
@@ -125,6 +144,8 @@ elseif DEVICE=1 then
    TOP_ADDRESS_TABLE[0] = "11E00"
 elseif DEVICE=2 then
    TOP_ADDRESS_TABLE[0] = "A1E00"
+elseif DEVICE=3 then
+   TOP_ADDRESS_TABLE[0] = "8003600"
 endif
 TOP_ADDRESS_TABLE[1] = "00000"
 
@@ -206,7 +227,7 @@ if dh=-1 then
    PROGRAM_UBOOT_ENV_VAR=0
 else
    PROGRAM_UBOOT_ENV_VAR=1
-   strconcat filenameubootenv filename
+   strconcat filenameubootenv filename 
    ; debug only
    ; messagebox filenameubootenv "Debug"
 
@@ -260,7 +281,7 @@ if USE_HIGH_BAUD=1 then
 endif
 
 if QSPI_NOT_eMMC then
-   if DEVICE<>2 then
+   if DEVICE<2 then
       sendln "XCS"
       waitregex "Clear OK?"
       sendln "y"
@@ -439,7 +460,7 @@ else
 endif
 
 if QSPI_NOT_eMMC then
-   if DEVICE<>2 then
+   if DEVICE < 2 then
       waitregex "SPI Data Clear"
    endif
 else
